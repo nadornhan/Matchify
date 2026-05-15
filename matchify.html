@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matchify - Intelligent Talent Matching Platform</title>
+  <link rel="stylesheet" href="matchify.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo" aria-hidden="true">T</div>
+      <span class="brand-name">Matchify</span>
+    </div>
+
+    <nav class="primary-nav hidden" id="candidateNav">
+      <button type="button" class="nav-link active" data-page="candidateFindJobsPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+        Find Jobs
+      </button>
+      <button type="button" class="nav-link" data-page="candidateMyJobsPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        My Jobs
+      </button>
+      <button type="button" class="nav-link" data-page="messagesPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-1 4 8.5 8.5 0 0 1-7.6 4.5 8.4 8.4 0 0 1-4-1L3 21l2-5.4a8.4 8.4 0 0 1-1-4 8.5 8.5 0 0 1 4.5-7.6 8.4 8.4 0 0 1 4-1A8.5 8.5 0 0 1 21 11.5z"></path></svg>
+        Messages
+        <span class="nav-badge hidden" data-nav-messages></span>
+      </button>
+      <button type="button" class="nav-link" data-page="candidateProfilePage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path></svg>
+        My Profile
+      </button>
+    </nav>
+
+    <nav class="primary-nav hidden" id="employerNav">
+      <button type="button" class="nav-link active" data-page="employerDashboardPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        Dashboard
+      </button>
+      <button type="button" class="nav-link" data-page="employerPostJobPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Post a Job
+      </button>
+      <button type="button" class="nav-link" data-page="employerCandidatesPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"></circle><path d="M2 21c0-4 3-6 7-6"></path><circle cx="17" cy="11" r="3"></circle><path d="M12 21c0-3 2-5 5-5s5 2 5 5"></path></svg>
+        Candidates
+      </button>
+      <button type="button" class="nav-link" data-page="employerApplicationsPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+        Applications
+      </button>
+      <button type="button" class="nav-link" data-page="employerInterviewsPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        Interviews
+      </button>
+      <button type="button" class="nav-link" data-page="employerSourcingPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l1.5 3L10 7.5 6.5 9 5 12 3.5 9 0 7.5l3.5-1.5z" transform="translate(2 2) scale(0.8)"></path><polyline points="14 14 17 17 14 20"></polyline><polyline points="20 14 17 17 20 20"></polyline></svg>
+        Smart Sourcing
+      </button>
+      <button type="button" class="nav-link" data-page="employerToolsPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6 2.6 2.6 6-6a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-2.6z"></path></svg>
+        Tools
+      </button>
+      <button type="button" class="nav-link" data-page="messagesPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-1 4 8.5 8.5 0 0 1-7.6 4.5 8.4 8.4 0 0 1-4-1L3 21l2-5.4a8.4 8.4 0 0 1-1-4 8.5 8.5 0 0 1 4.5-7.6 8.4 8.4 0 0 1 4-1A8.5 8.5 0 0 1 21 11.5z"></path></svg>
+        Messages
+        <span class="nav-badge hidden" data-nav-messages></span>
+      </button>
+    </nav>
+
+    <div class="header-actions">
+      <button id="logoutBtn" type="button" class="logout-btn hidden">Log Out</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- LANDING -->
+    <section class="page-section" id="landingPage">
+      <section class="hero">
+        <h1 class="hero-title">Matchify</h1>
+        <p class="hero-subtitle">
+          Supercharge your career or find your next star employee effortlessly.
+          Discover tailored matches powered by cutting-edge algorithms and make hiring seamless.
+        </p>
+      </section>
+      <div class="role-grid">
+        <article class="role-card">
+          <div class="role-icon role-icon-candidate" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8" r="4"></circle><path d="M2 20c0-3.5 3.5-6 8-6"></path><circle cx="17" cy="17" r="3"></circle><path d="M19.5 19.5L22 22"></path></svg>
+          </div>
+          <h2>I'm a Candidate</h2>
+          <p>Create your profile, explore matching opportunities, and get intelligent job recommendations tailored just for you.</p>
+          <button id="findJobsBtn" type="button" class="primary-blue">Find Jobs <span class="arrow">&rarr;</span></button>
+        </article>
+        <article class="role-card">
+          <div class="role-icon role-icon-employer" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><path d="M3 12h18"></path></svg>
+          </div>
+          <h2>I'm an Employer</h2>
+          <p>Post job openings and let our AI-driven platform recommend the top matching candidates for your roles.</p>
+          <button id="findCandidatesBtn" type="button" class="primary-green">Find Candidates <span class="arrow">&rarr;</span></button>
+        </article>
+      </div>
+    </section>
+
+    <!-- CANDIDATE AUTH -->
+    <section class="page-section hidden" id="candidateAuthPage">
+      <div class="auth-shell">
+        <div class="auth-card-modern" id="candidateSignupCard">
+          <div class="auth-icon role-icon-candidate">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path></svg>
+          </div>
+          <h2>Create an account</h2>
+          <p class="auth-tagline">Join to discover jobs that match your skills.</p>
+          <form id="candidateSignupForm" class="form-stack">
+            <label class="field">Full Name
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path></svg>
+                <input type="text" id="candidateSignupName" placeholder="John Doe" required>
+              </span>
+            </label>
+            <label class="field">Email Address
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+                <input type="email" id="candidateSignupEmail" placeholder="you@example.com" required>
+              </span>
+            </label>
+            <label class="field">Password
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+                <input type="password" id="candidateSignupPassword" placeholder="••••••••" minlength="6" required>
+              </span>
+            </label>
+            <button type="submit" class="primary-blue full">Create Account <span class="arrow">&rarr;</span></button>
+          </form>
+          <p class="auth-switch">Already have an account? <button type="button" class="link" data-switch="candidateLoginCard">Sign in</button></p>
+          <p id="candidateAuthStatus" class="status"></p>
+          <button type="button" class="link back-btn" data-target="landing">&larr; Back to home</button>
+        </div>
+
+        <div class="auth-card-modern hidden" id="candidateLoginCard">
+          <div class="auth-icon role-icon-candidate">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path></svg>
+          </div>
+          <h2>Welcome back</h2>
+          <p class="auth-tagline">Sign in to find your next great opportunity.</p>
+          <form id="candidateLoginForm" class="form-stack">
+            <label class="field">Email Address
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+                <input type="email" id="candidateLoginEmail" placeholder="you@example.com" required>
+              </span>
+            </label>
+            <label class="field">Password
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+                <input type="password" id="candidateLoginPassword" placeholder="••••••••" required>
+              </span>
+            </label>
+            <button type="submit" class="primary-blue full">Sign In <span class="arrow">&rarr;</span></button>
+          </form>
+          <p class="auth-switch">Don't have an account? <button type="button" class="link" data-switch="candidateSignupCard">Sign up</button></p>
+          <p id="candidateLoginStatus" class="status"></p>
+          <button type="button" class="link back-btn" data-target="landing">&larr; Back to home</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- EMPLOYER AUTH -->
+    <section class="page-section hidden" id="employerAuthPage">
+      <div class="auth-shell">
+        <div class="auth-card-modern" id="employerSignupCard">
+          <div class="auth-icon role-icon-employer-soft">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="14" rx="2"></rect><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="11"></line><line x1="14" y1="11" x2="14" y2="11"></line><line x1="10" y1="15" x2="10" y2="15"></line><line x1="14" y1="15" x2="14" y2="15"></line></svg>
+          </div>
+          <h2>Register Company</h2>
+          <p class="auth-tagline">Start finding the perfect talent for your team.</p>
+          <form id="employerSignupForm" class="form-stack">
+            <label class="field">Company Name
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                <input type="text" id="employerSignupCompany" placeholder="TechCorp Inc." required>
+              </span>
+            </label>
+            <label class="field">Work Email Address
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+                <input type="email" id="employerSignupEmail" placeholder="recruiter@company.com" required>
+              </span>
+            </label>
+            <label class="field">Password
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+                <input type="password" id="employerSignupPassword" placeholder="••••••••" minlength="6" required>
+              </span>
+            </label>
+            <button type="submit" class="primary-blue full">Create Employer Account <span class="arrow">&rarr;</span></button>
+          </form>
+          <p class="auth-switch">Already have an account? <button type="button" class="link" data-switch="employerLoginCard">Sign in</button></p>
+          <p id="employerAuthStatus" class="status"></p>
+          <button type="button" class="link back-btn" data-target="landing">&larr; Back to home</button>
+        </div>
+
+        <div class="auth-card-modern hidden" id="employerLoginCard">
+          <div class="auth-icon role-icon-employer-soft">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="14" rx="2"></rect><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </div>
+          <h2>Employer Login</h2>
+          <p class="auth-tagline">Sign in to review candidates and jobs.</p>
+          <form id="employerLoginForm" class="form-stack">
+            <label class="field">Work Email Address
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+                <input type="email" id="employerLoginEmail" placeholder="recruiter@company.com" required>
+              </span>
+            </label>
+            <label class="field">Password
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+                <input type="password" id="employerLoginPassword" placeholder="••••••••" required>
+              </span>
+            </label>
+            <button type="submit" class="primary-blue full">Sign In <span class="arrow">&rarr;</span></button>
+          </form>
+          <p class="auth-switch">Don't have an account? <button type="button" class="link" data-switch="employerSignupCard">Sign up</button></p>
+          <p id="employerLoginStatus" class="status"></p>
+          <button type="button" class="link back-btn" data-target="landing">&larr; Back to home</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CANDIDATE: FIND JOBS -->
+    <section class="page-section hidden" id="candidateFindJobsPage">
+      <div class="pill-search">
+        <div class="pill-field">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+          <input type="text" id="jobSearchKeyword" placeholder="Job title, keywords or company">
+        </div>
+        <div class="pill-divider"></div>
+        <div class="pill-field">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+          <input type="text" id="jobSearchLocation" placeholder="city, state/territory, postcode or ...">
+        </div>
+        <button id="jobSearchBtn" class="primary-blue pill-cta">Find jobs</button>
+      </div>
+
+      <div class="filter-bar">
+        <select id="jobFilterWorkMode">
+          <option value="">Any work mode</option>
+          <option>Remote</option>
+          <option>On-site</option>
+          <option>Hybrid</option>
+        </select>
+        <select id="jobFilterJobType">
+          <option value="">Any job type</option>
+          <option>Full-time</option>
+          <option>Part-time</option>
+          <option>Contract</option>
+          <option>Internship</option>
+        </select>
+        <select id="jobFilterEducation">
+          <option value="">Any education</option>
+          <option>High School</option>
+          <option>Diploma</option>
+          <option>Bachelor</option>
+          <option>Master</option>
+          <option>PhD</option>
+        </select>
+        <input type="number" id="jobFilterMaxExp" min="0" placeholder="Max required exp.">
+        <input type="number" id="jobFilterMinSalary" min="0" placeholder="Min salary">
+        <button id="jobFilterClear" class="secondary">Clear</button>
+      </div>
+
+      <div class="jobs-layout">
+        <aside class="recommend-sidebar">
+          <h3 class="rec-title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2"></polygon></svg>
+            Top Recommendations
+          </h3>
+          <div id="recommendedJobsList" class="rec-list"></div>
+        </aside>
+        <section class="jobs-main">
+          <h3 class="section-title">All Available Jobs</h3>
+          <div id="allJobsList" class="job-list"></div>
+        </section>
+        <aside class="job-detail-panel hidden" id="jobDetailPanel">
+          <div class="job-detail-banner"></div>
+          <button class="detail-close" id="jobDetailClose" type="button">&times;</button>
+          <div class="job-detail-body" id="jobDetailBody"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- CANDIDATE: MY JOBS -->
+    <section class="page-section hidden" id="candidateMyJobsPage">
+      <div class="page-header">
+        <h1>My Jobs</h1>
+        <p class="page-sub">Track and manage your saved jobs and applications.</p>
+      </div>
+      <div class="tab-pills" id="myJobsTabs">
+        <button type="button" class="tab-pill active" data-tab="saved">Saved <span class="tab-count" id="savedCount">0</span></button>
+        <button type="button" class="tab-pill" data-tab="applied">Applied <span class="tab-count" id="appliedCount">0</span></button>
+        <button type="button" class="tab-pill" data-tab="interviews">Interviews <span class="tab-count" id="interviewsCount">0</span></button>
+      </div>
+      <div id="myJobsList" class="application-list"></div>
+    </section>
+
+    <!-- CANDIDATE: PROFILE -->
+    <section class="page-section hidden" id="candidateProfilePage">
+      <section class="card profile-card">
+        <div class="profile-card-head">
+          <div>
+            <h1>Your Profile</h1>
+            <p class="page-sub">Complete your profile to get intelligent job recommendations.</p>
+          </div>
+          <button type="button" id="candidateMembershipBtn" class="membership-btn">Upgrade to Premium</button>
+        </div>
+
+        <form id="candidateForm" class="profile-form">
+          <h3 class="profile-section-title">
+            <span class="section-icon role-icon-candidate"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path></svg></span>
+            Basic Information
+          </h3>
+          <div class="grid-2">
+            <label class="field">Full Name
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path></svg>
+                <input type="text" id="candidateName" placeholder="Alice Smith" required>
+              </span>
+            </label>
+            <label class="field">Email Address
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+                <input type="email" id="candidateEmail" placeholder="you@example.com" required>
+              </span>
+            </label>
+            <label class="field">Phone Number
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"></path></svg>
+                <input type="text" id="candidateContact" placeholder="555-0100">
+              </span>
+            </label>
+            <label class="field">Preferred Location
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+                <input type="text" id="candidateLocation" placeholder="Any city">
+              </span>
+            </label>
+          </div>
+
+          <h3 class="profile-section-title">
+            <span class="section-icon role-icon-candidate"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l10-5 10 5-10 5L2 7z"></path><path d="M6 10v5c0 1 3 3 6 3s6-2 6-3v-5"></path></svg></span>
+            Education &amp; Experience
+          </h3>
+          <div class="grid-2">
+            <label class="field">Highest Education
+              <select id="candidateEducation" required>
+                <option value="">Select</option>
+                <option>High School</option>
+                <option>Diploma</option>
+                <option>Bachelor</option>
+                <option>Master</option>
+                <option>PhD</option>
+              </select>
+            </label>
+            <label class="field">Major / Field of Study
+              <input type="text" id="candidateMajor" placeholder="Computer Science" required>
+            </label>
+            <label class="field">Years of Experience
+              <input type="number" id="candidateExperience" min="0" placeholder="3" required>
+            </label>
+            <label class="field">Preferred Work Mode
+              <select id="candidateWorkMode">
+                <option value="Any">Any</option>
+                <option>Remote</option>
+                <option>On-site</option>
+                <option>Hybrid</option>
+              </select>
+            </label>
+          </div>
+
+          <h3 class="profile-section-title">
+            <span class="section-icon role-icon-candidate"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></span>
+            Skills
+          </h3>
+          <div class="chip-input-wrap">
+            <input type="text" id="candidateSkillsInput" placeholder="Add Skills (press Enter), e.g. React, Python, Data Analysis">
+            <div id="candidateSkillsChips" class="chip-row"></div>
+          </div>
+
+          <h3 class="profile-section-title">
+            <span class="section-icon role-icon-candidate"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></span>
+            Work Experience
+            <button type="button" id="addWorkExperienceBtn" class="primary-blue small inline-action">+ Add Experience</button>
+          </h3>
+          <div id="workExperienceList" class="work-exp-list"></div>
+
+          <h3 class="profile-section-title">
+            <span class="section-icon role-icon-candidate"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg></span>
+            Resume
+          </h3>
+          <div class="upload-area">
+            <input type="file" id="candidateResume" accept="image/*" hidden>
+            <label for="candidateResume" class="upload-label">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#2250f4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8a5 5 0 0 0-9.6-1.5A4 4 0 0 0 6 14h11a4 4 0 0 0 0-8z"></path><polyline points="12 11 12 17"></polyline><polyline points="9 14 12 11 15 14"></polyline></svg>
+              <span class="upload-primary">Upload a resume image</span>
+              <span class="upload-meta">PNG, JPG, or WEBP &middot; OCR will read text automatically</span>
+              <span id="resumePreviewName" class="upload-meta"></span>
+            </label>
+            <button type="button" id="extractResumeBtn" class="secondary small">Extract from Resume</button>
+          </div>
+
+          <div class="form-foot">
+            <p id="candidateStatus" class="status"></p>
+            <button type="submit" class="primary-blue">Save Profile</button>
+          </div>
+        </form>
+      </section>
+    </section>
+
+    <!-- EMPLOYER: DASHBOARD -->
+    <section class="page-section hidden" id="employerDashboardPage">
+      <div class="dashboard-hero">
+        <div class="dashboard-rocket role-icon-employer">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l4-4a8 8 0 0 1 8-8h4v4a8 8 0 0 1-8 8l-4 4"></path><path d="M11 11l2 2"></path><path d="M3 21l3-3"></path></svg>
+        </div>
+        <h1>Supercharge your hiring process</h1>
+        <p class="page-sub">Welcome back, <span id="employerWelcomeName">recruiter</span>!</p>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.5"></circle></svg></div>
+            <h4>Precision Matching</h4>
+            <p>Our matching engine analyses candidate profiles to find your perfect fit instantly.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"></circle><path d="M2 21c0-4 3-6 7-6"></path><circle cx="17" cy="11" r="3"></circle><path d="M12 21c0-3 2-5 5-5s5 2 5 5"></path></svg></div>
+            <h4>Broader Reach</h4>
+            <p>Get your open roles in front of qualified, active job seekers.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 4 14 11 14 9 22 20 10 13 10 13 2"></polygon></svg></div>
+            <h4>Hire Faster</h4>
+            <p>Reduce time-to-hire with streamlined matching and easy candidate search.</p>
+          </article>
+        </div>
+        <div class="dashboard-cta">
+          <button type="button" id="dashboardPostJobBtn" class="primary-blue large">+ Create Your First Job Post</button>
+          <button type="button" id="employerMembershipBtn" class="membership-btn">Upgrade to Premium</button>
+        </div>
+      </div>
+
+      <section class="card" id="manageJobsCard">
+        <h2 class="section-title">Manage My Job Postings</h2>
+        <div id="myJobPostingsList" class="job-list"></div>
+      </section>
+    </section>
+
+    <!-- EMPLOYER: POST JOB -->
+    <section class="page-section hidden" id="employerPostJobPage">
+      <section class="card profile-card">
+        <h1 class="page-title">
+          <span class="title-icon role-icon-employer"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></span>
+          <span id="jobFormTitle">Create Job Posting</span>
+        </h1>
+        <p class="page-sub">Provide detailed information to attract the best candidates and improve recommendation accuracy.</p>
+
+        <form id="jobForm" class="profile-form">
+          <h3 class="profile-section-title">
+            <span class="section-icon role-icon-employer"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg></span>
+            Basic Details
+          </h3>
+          <div class="grid-2">
+            <label class="field">Job Title
+              <input type="text" id="jobTitle" placeholder="Frontend Developer" required>
+            </label>
+            <label class="field">Company Name
+              <input type="text" id="jobCompany" placeholder="TechCorp Inc." required>
+            </label>
+          </div>
+          <label class="field">Job Description
+            <textarea id="jobDescription" rows="4" placeholder="Describe the role, responsibilities, and key requirements..." required></textarea>
+          </label>
+
+          <h3 class="profile-section-title">
+            <span class="section-icon role-icon-employer"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l10-5 10 5-10 5L2 7z"></path><path d="M6 10v5c0 1 3 3 6 3s6-2 6-3v-5"></path></svg></span>
+            Requirements &amp; Logistics
+          </h3>
+          <div class="grid-2">
+            <label class="field">Required Education Level
+              <select id="jobEducation" required>
+                <option value="">Select</option>
+                <option>High School</option>
+                <option>Diploma</option>
+                <option>Bachelor</option>
+                <option>Master</option>
+                <option>PhD</option>
+              </select>
+            </label>
+            <label class="field">Required Years of Experience
+              <input type="number" id="jobExperience" min="0" value="0" required>
+            </label>
+            <label class="field">Work Mode
+              <select id="jobWorkMode" required>
+                <option>Remote</option>
+                <option>On-site</option>
+                <option>Hybrid</option>
+              </select>
+            </label>
+            <label class="field">Job Type
+              <select id="jobType" required>
+                <option>Full-time</option>
+                <option>Part-time</option>
+                <option>Contract</option>
+                <option>Internship</option>
+              </select>
+            </label>
+            <label class="field">Job Location
+              <input type="text" id="jobLocation" placeholder="e.g. San Francisco, CA" required>
+            </label>
+            <label class="field">Salary Range (USD / year)
+              <div class="salary-range">
+                <input type="number" id="jobSalaryMin" min="0" placeholder="Min">
+                <span>to</span>
+                <input type="number" id="jobSalaryMax" min="0" placeholder="Max">
+              </div>
+            </label>
+          </div>
+
+          <h3 class="profile-section-title">
+            <span class="section-icon role-icon-employer"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></span>
+            Required Skills
+          </h3>
+          <div class="chip-input-wrap">
+            <input type="text" id="jobSkillsInput" placeholder="Add required skills (press Enter), e.g. React, Python, Product Management">
+            <div id="jobSkillsChips" class="chip-row"></div>
+          </div>
+
+          <div class="form-foot">
+            <p id="jobStatus" class="status"></p>
+            <div>
+              <button type="button" id="cancelJobEditBtn" class="secondary hidden">Cancel</button>
+              <button type="submit" class="primary-green">Post Job</button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </section>
+
+    <!-- EMPLOYER: CANDIDATES -->
+    <section class="page-section hidden" id="employerCandidatesPage">
+      <div class="page-header">
+        <h1>Candidate Directory</h1>
+        <p class="page-sub">Search across name, skills, education, experience, and location.</p>
+      </div>
+
+      <div class="filter-bar">
+        <input type="text" id="candidateSearchInput" class="filter-search" placeholder="Search candidates by name, major, location or skills...">
+        <select id="candidateFilterEducation">
+          <option value="">All Education</option>
+          <option>High School</option>
+          <option>Diploma</option>
+          <option>Bachelor</option>
+          <option>Master</option>
+          <option>PhD</option>
+        </select>
+        <input type="number" id="candidateFilterMinExp" min="0" placeholder="Min experience">
+        <input type="text" id="candidateFilterSkill" placeholder="Skill (e.g. React)">
+        <input type="text" id="candidateFilterLocation" placeholder="Location">
+        <select id="candidateFilterWorkMode">
+          <option value="">Any work mode</option>
+          <option>Remote</option>
+          <option>On-site</option>
+          <option>Hybrid</option>
+        </select>
+        <button id="candidateFilterClear" class="secondary">Clear</button>
+      </div>
+
+      <div class="candidates-layout">
+        <aside class="recommend-sidebar">
+          <h3 class="rec-title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2"></polygon></svg>
+            Smart Recommendations
+          </h3>
+          <p class="hint">Select a job posting to see top candidates:</p>
+          <select id="recommendationJobSelector"></select>
+          <div id="recommendedCandidatesList" class="rec-list"></div>
+        </aside>
+        <section class="candidates-main">
+          <h3 class="section-title">All Candidates</h3>
+          <div id="allCandidatesGrid" class="candidate-grid"></div>
+        </section>
+      </div>
+    </section>
+    <!-- EMPLOYER: APPLICATIONS -->
+    <section class="page-section hidden" id="employerApplicationsPage">
+      <div class="page-header">
+        <h1>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px; margin-right:6px;"><path d="M9 11l3 3 8-8"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+          Applications
+        </h1>
+        <p class="page-sub">Review candidates who applied to your jobs and move them through your hiring pipeline.</p>
+      </div>
+
+      <div class="filter-bar">
+        <input type="text" id="applicationsSearch" class="filter-search" placeholder="Search by candidate, job title, or skills...">
+        <select id="applicationsJobFilter">
+          <option value="">All job postings</option>
+        </select>
+      </div>
+
+      <div class="tab-pills" id="applicationsTabs">
+        <button type="button" class="tab-pill active" data-app-tab="all">All <span class="tab-count" id="appsAllCount">0</span></button>
+        <button type="button" class="tab-pill" data-app-tab="applied">Applied <span class="tab-count" id="appsAppliedCount">0</span></button>
+        <button type="button" class="tab-pill" data-app-tab="shortlisted">Shortlisted <span class="tab-count" id="appsShortlistedCount">0</span></button>
+        <button type="button" class="tab-pill" data-app-tab="interview_scheduled">Interview Scheduled <span class="tab-count" id="appsInterviewCount">0</span></button>
+        <button type="button" class="tab-pill" data-app-tab="rejected">Rejected <span class="tab-count" id="appsRejectedCount">0</span></button>
+      </div>
+
+      <div id="applicationsList" class="application-list"></div>
+    </section>
+
+    <!-- EMPLOYER: INTERVIEWS -->
+    <section class="page-section hidden" id="employerInterviewsPage">
+      <div class="page-header page-header-row">
+        <div>
+          <h1>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px; margin-right:6px;"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            Interviews
+          </h1>
+          <p class="page-sub">Manage your upcoming candidate conversations.</p>
+        </div>
+        <button type="button" id="scheduleInterviewBtn" class="primary-blue">+ Schedule New Interview</button>
+      </div>
+
+      <div class="interviews-layout">
+        <aside class="interviews-side">
+          <section class="card week-card">
+            <h3 class="rec-title">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              This Week
+            </h3>
+            <div class="week-grid" id="interviewsWeekGrid"></div>
+          </section>
+          <section class="card action-card">
+            <h3 class="rec-title">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12" y2="16"></line></svg>
+              Action Required
+            </h3>
+            <div id="interviewsActionList" class="action-list"></div>
+          </section>
+        </aside>
+
+        <section class="card interviews-main">
+          <div class="interviews-main-head">
+            <h3 class="section-title">Upcoming Interviews</h3>
+            <div class="tab-pills compact" id="interviewsRangeTabs">
+              <button type="button" class="tab-pill" data-int-range="today">Today</button>
+              <button type="button" class="tab-pill active" data-int-range="week">This Week</button>
+              <button type="button" class="tab-pill" data-int-range="all">All</button>
+            </div>
+          </div>
+          <div id="interviewsList" class="interview-list"></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- EMPLOYER: SMART SOURCING -->
+    <section class="page-section hidden" id="employerSourcingPage">
+      <div class="page-header">
+        <h1>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px; margin-right:6px;"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2"></polygon></svg>
+          Smart Sourcing
+        </h1>
+        <p class="page-sub">Let our matching engine surface the strongest candidates for your open roles.</p>
+      </div>
+
+      <section class="sourcing-hero">
+        <div class="sourcing-hero-content">
+          <h2>Automate your outreach</h2>
+          <p>Create campaigns that automatically discover, score, and message top-tier talent before they even apply. Our model analyses 50+ data points to ensure high-quality matches.</p>
+          <div class="sourcing-hero-controls">
+            <select id="sourcingJobSelector"></select>
+            <button type="button" id="sourcingRunBtn" class="ghost-on-dark">Run Smart Match</button>
+          </div>
+        </div>
+        <div class="sourcing-hero-orb" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4a4 4 0 0 0-2 7.5A4 4 0 0 0 8 19a4 4 0 0 0 4-2 4 4 0 0 0 4 2 4 4 0 0 0 2-7.5A4 4 0 0 0 16 4a4 4 0 0 0-4 2 4 4 0 0 0-4-2z"></path></svg>
+        </div>
+      </section>
+
+      <div class="metric-grid">
+        <article class="metric-card">
+          <div class="metric-head">
+            <span class="metric-label">Candidates Sourced</span>
+            <span class="metric-icon role-icon-candidate"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></span>
+          </div>
+          <div class="metric-value" id="metricCandidatesSourced">0</div>
+          <div class="metric-trend up" id="metricCandidatesTrend">+0 this session</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-head">
+            <span class="metric-label">Response Rate</span>
+            <span class="metric-icon role-icon-candidate"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"></circle><path d="M2 21c0-4 3-6 7-6"></path><circle cx="17" cy="11" r="3"></circle><path d="M12 21c0-3 2-5 5-5s5 2 5 5"></path></svg></span>
+          </div>
+          <div class="metric-value" id="metricResponseRate">0%</div>
+          <div class="metric-trend up" id="metricResponseTrend">Auto-messages sent</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-head">
+            <span class="metric-label">Interviews Scheduled</span>
+            <span class="metric-icon role-icon-employer"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2"></polygon></svg></span>
+          </div>
+          <div class="metric-value" id="metricInterviewsScheduled">0</div>
+          <div class="metric-trend up" id="metricInterviewsTrend">From smart matches</div>
+        </article>
+      </div>
+
+      <section class="card">
+        <div class="sourcing-list-head">
+          <h3 class="section-title">New AI Recommendations</h3>
+          <span class="hint" id="sourcingJobLabel">Select a job above to begin</span>
+        </div>
+        <div id="sourcingList" class="sourcing-list"></div>
+      </section>
+    </section>
+
+    <!-- MESSAGES (shared by Candidate & Employer) -->
+    <section class="page-section hidden" id="messagesPage">
+      <div class="page-header">
+        <h1>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px; margin-right:6px;"><path d="M21 11.5a8.4 8.4 0 0 1-1 4 8.5 8.5 0 0 1-7.6 4.5 8.4 8.4 0 0 1-4-1L3 21l2-5.4a8.4 8.4 0 0 1-1-4 8.5 8.5 0 0 1 4.5-7.6 8.4 8.4 0 0 1 4-1A8.5 8.5 0 0 1 21 11.5z"></path></svg>
+          Messages
+        </h1>
+        <p class="page-sub">Talk with candidates and employers directly. Interview invites are delivered here automatically.</p>
+      </div>
+      <div class="messages-layout">
+        <aside class="thread-sidebar">
+          <div id="messageThreadList" class="thread-list"></div>
+        </aside>
+        <section class="card chat-shell" id="messagesChat">
+          <header class="chat-header" id="chatHeader"></header>
+          <div id="chatMessages" class="chat-body"></div>
+          <form id="chatForm" class="chat-composer">
+            <input type="text" id="chatInput" placeholder="Write a message...">
+            <button type="submit" class="primary-blue">Send</button>
+          </form>
+        </section>
+        <div class="card chat-empty" id="messagesEmpty">
+          <h3>Welcome to Messages</h3>
+          <p class="hint">Select a conversation from the sidebar to view and respond. New conversations appear when you message a candidate or employer.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- EMPLOYER: TOOLS -->
+    <section class="page-section hidden" id="employerToolsPage">
+      <div class="page-header">
+        <h1>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px; margin-right:6px;"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6 2.6 2.6 6-6a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-2.6z"></path></svg>
+          Tools &amp; Integrations
+        </h1>
+        <p class="page-sub">Connect Matchify with your existing workflow to supercharge your hiring.</p>
+      </div>
+
+      <section class="card">
+        <h3 class="section-title">Connected Apps</h3>
+        <p class="hint">Sync your data automatically across your favourite tools.</p>
+        <div id="integrationsList" class="integration-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <!-- INTERVIEW SCHEDULER MODAL -->
+  <div id="interviewModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <button type="button" class="modal-close" id="interviewModalClose">&times;</button>
+      <h3>Schedule Interview</h3>
+      <form id="interviewForm" class="form-stack">
+        <label class="field">Candidate
+          <select id="interviewCandidate" required></select>
+        </label>
+        <label class="field">Job Posting
+          <select id="interviewJob" required></select>
+        </label>
+        <label class="field">Interview Title
+          <input type="text" id="interviewTitle" placeholder="e.g. Technical Assessment - Frontend" required>
+        </label>
+        <div class="grid-2">
+          <label class="field">Date &amp; Time
+            <input type="datetime-local" id="interviewDateTime" required>
+          </label>
+          <label class="field">Duration (minutes)
+            <input type="number" id="interviewDuration" min="15" step="5" value="60" required>
+          </label>
+        </div>
+        <label class="field">Meeting type
+          <select id="interviewMeetingType">
+            <option value="google_meet">Google Meet (auto-generated)</option>
+            <option value="phone">Phone Call</option>
+            <option value="onsite">On-site / Office</option>
+          </select>
+        </label>
+        <p id="interviewStatus" class="status"></p>
+        <div class="form-foot">
+          <button type="button" class="secondary" id="interviewCancel">Cancel</button>
+          <button type="submit" class="primary-blue">Schedule &amp; Send Invite</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CANDIDATE DETAIL PANEL -->
+  <aside class="job-detail-panel hidden" id="candidateDetailPanel">
+    <div class="job-detail-banner candidate-banner"></div>
+    <button class="detail-close" id="candidateDetailClose" type="button">&times;</button>
+    <div class="job-detail-body" id="candidateDetailBody"></div>
+  </aside>
+
+  <!-- WORK EXPERIENCE MODAL -->
+  <div id="workExpModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <button type="button" class="modal-close" id="workExpModalClose">&times;</button>
+      <h3>Add Work Experience</h3>
+      <form id="workExpForm" class="form-stack">
+        <label class="field">Job Title
+          <input type="text" id="workExpTitle" required>
+        </label>
+        <label class="field">Company
+          <input type="text" id="workExpCompany" required>
+        </label>
+        <div class="grid-2">
+          <label class="field">Start Year
+            <input type="number" id="workExpStart" min="1950" max="2100" required>
+          </label>
+          <label class="field">End Year (or blank for present)
+            <input type="number" id="workExpEnd" min="1950" max="2100">
+          </label>
+        </div>
+        <label class="field">Description
+          <textarea id="workExpDescription" rows="3" placeholder="Key responsibilities..."></textarea>
+        </label>
+        <div class="form-foot">
+          <button type="button" class="secondary" id="workExpCancel">Cancel</button>
+          <button type="submit" class="primary-blue">Save Experience</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="matchifyMain.js"></script>
+</body>
+</html>
