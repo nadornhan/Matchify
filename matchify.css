@@ -58,16 +58,11 @@ body {
 }
 
 .brand-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  background: var(--accent);
-  color: #fff;
-  font-weight: 700;
-  font-size: 1.15rem;
-  display: grid;
-  place-items: center;
-  box-shadow: 0 4px 10px rgba(34, 80, 244, 0.25);
+  width: 48px;
+  height: 48px;
+  border-radius: 11px;
+  object-fit: contain;
+  display: block;
 }
 
 .brand-name {
@@ -151,7 +146,9 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  line-height: 1.05;
+  line-height: 1.25;
+  padding: 0.1em 0.05em 0.15em;
+  display: inline-block;
 }
 
 .hero-subtitle {
