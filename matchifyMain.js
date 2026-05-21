@@ -13,7 +13,9 @@ const STORAGE = {
   interviews: "matchifyInterviews",
   integrations: "matchifyIntegrations",
   sourcing: "matchifySourcing",
-  messages: "matchifyMessages"
+  messages: "matchifyMessages",
+  companies: "matchifyCompanies",
+  reviews: "matchifyReviews"
 };
 
 const APP_STATUS_LABELS = {
@@ -45,7 +47,9 @@ const educationRank = {
   "High School": 1,
   Diploma: 2,
   Bachelor: 3,
+  "Bachelor's Degree": 3,
   Master: 4,
+  "Master's Degree": 4,
   PhD: 5
 };
 
@@ -108,7 +112,79 @@ let applications = loadArray(STORAGE.applications);
 let interviews = loadArray(STORAGE.interviews);
 let sourcingHistory = loadArray(STORAGE.sourcing);
 let messages = loadArray(STORAGE.messages);
+let companies = loadArray(STORAGE.companies);
+let reviews = loadArray(STORAGE.reviews);
 let integrations = loadIntegrations();
+
+/* Seed companies + reviews on first run */
+const SEED_COMPANIES = [
+  { name: "Nimbus Data Systems", color: "#2250f4", industry: "Cloud Computing", rating: 4.8, reviewsCount: 412, salariesCount: 2500, questionsCount: 45, mockOpenJobs: 180, description: "Nimbus is a leading cloud computing platform powering data infrastructure for thousands of teams worldwide." },
+  { name: "Verdant Spire", color: "#17a862", industry: "Renewable Energy", rating: 4.5, reviewsCount: 1253, salariesCount: 1200, questionsCount: 72, mockOpenJobs: 94, description: "Verdant Spire develops next-generation renewable energy systems for residential and commercial customers." },
+  { name: "Nexus Robotics", color: "#9333ea", industry: "Robotics & AI", rating: 4.9, reviewsCount: 834, salariesCount: 950, questionsCount: 38, mockOpenJobs: 112, description: "Nexus Robotics builds intelligent automation hardware and software to redefine modern manufacturing." },
+  { name: "Aura Health Tech", color: "#0ea5b7", industry: "Healthcare Technology", rating: 4.6, reviewsCount: 562, salariesCount: 820, questionsCount: 24, mockOpenJobs: 45, description: "Aura Health Tech connects clinicians and patients with smart digital tools to improve outcomes." },
+  { name: "Lumina Creative", color: "#ec4899", industry: "Creative Agency", rating: 4.3, reviewsCount: 428, salariesCount: 3100, questionsCount: 145, mockOpenJobs: 88, description: "Lumina Creative produces award-winning brand storytelling and digital experiences." },
+  { name: "Orbit Logistics", color: "#f97316", industry: "Logistics & Supply Chain", rating: 4.7, reviewsCount: 1845, salariesCount: 4500, questionsCount: 210, mockOpenJobs: 340, description: "Orbit Logistics moves the world with global supply-chain solutions and last-mile fulfilment." }
+];
+
+const SEED_REVIEW_TEMPLATES = [
+  { rating: 4, title: "Great people", position: "PM", location: "Sydney NSW", body: "Great people. Hard working. Good culture, knowledgeable staff, good employee benefits. Process improvements underway, good pay, diverse workforce. Great offices, work from home, central location.", likes: 12, dislikes: 1 },
+  { rating: 5, title: "Excellent growth opportunities", position: "Senior Developer", location: "Melbourne VIC", body: "I have been here for 3 years and the career progression is unmatched. The teams are highly collaborative and management genuinely cares about your well-being and professional development.", likes: 34, dislikes: 2 },
+  { rating: 3, title: "Good benefits but high pressure", position: "Analyst", location: "Brisbane QLD", body: "The salary and bonuses are very competitive. However, the work-life balance can suffer during peak seasons. You are expected to deliver high-quality work under tight deadlines.", likes: 5, dislikes: 3 }
+];
+
+function seedCompaniesIfEmpty() {
+  if (companies.length === 0) {
+    companies = SEED_COMPANIES.map((c) => ({
+      id: createId("co"),
+      name: c.name,
+      color: c.color,
+      industry: c.industry,
+      seededRating: c.rating,
+      seededReviewsCount: c.reviewsCount,
+      salariesCount: c.salariesCount,
+      questionsCount: c.questionsCount,
+      mockOpenJobs: c.mockOpenJobs,
+      description: c.description,
+      whyJoinUs: "Be part of a mission-driven team that values innovation, transparency, and continuous learning. Competitive compensation, hybrid work, and meaningful career growth.",
+      detailedRatings: {
+        "Work-life balance": (c.rating - 0.2).toFixed(1),
+        "Pay and benefits": (c.rating - 0.1).toFixed(1),
+        "Job security": (c.rating - 0.3).toFixed(1),
+        "Management": (c.rating - 0.4).toFixed(1),
+        "Culture": (c.rating - 0.2).toFixed(1)
+      },
+      saying: {
+        positive: ["Trust in colleagues", "Fair pay for job", "Personal appreciation"],
+        negative: ["General feeling of work happiness", "Energising work tasks"]
+      },
+      createdAt: Date.now()
+    }));
+    saveArray(STORAGE.companies, companies);
+  }
+  if (reviews.length === 0) {
+    const seeded = [];
+    companies.slice(0, 6).forEach((co, idx) => {
+      SEED_REVIEW_TEMPLATES.forEach((tpl, i) => {
+        seeded.push({
+          id: createId("rev"),
+          companyName: co.name,
+          authorName: null,
+          rating: tpl.rating,
+          title: tpl.title,
+          position: tpl.position,
+          location: tpl.location,
+          body: tpl.body,
+          likes: tpl.likes,
+          dislikes: tpl.dislikes,
+          createdAt: Date.now() - (idx * 86400000 * 12 + i * 86400000 * 4)
+        });
+      });
+    });
+    reviews = seeded;
+    saveArray(STORAGE.reviews, reviews);
+  }
+}
+seedCompaniesIfEmpty();
 let currentUser = loadSessionUser();
 
 function loadIntegrations() {
@@ -125,25 +201,68 @@ function saveIntegrations() {
   localStorage.setItem(STORAGE.integrations, JSON.stringify(integrations));
 }
 
-/* Migrate existing applications: ensure each "applied" record has employerStatus */
+/* Migrate existing applications: ensure each "applied" record has employerStatus + events */
 applications.forEach((app) => {
   if (app.status === "applied" && !app.employerStatus) app.employerStatus = "applied";
+  if (typeof app.viewedByEmployer !== "boolean") app.viewedByEmployer = false;
+  if (typeof app.candidateArchived !== "boolean") app.candidateArchived = false;
+  if (!Array.isArray(app.events)) {
+    app.events = [];
+    if (app.status === "applied") {
+      app.events.push({ kind: "submitted", label: "Application successfully submitted.", at: app.createdAt || Date.now() });
+    }
+  }
 });
 saveArray(STORAGE.applications, applications);
 
+/* Helper: push a timeline event */
+function pushAppEvent(app, kind, label) {
+  if (!app) return;
+  if (!Array.isArray(app.events)) app.events = [];
+  app.events.push({ kind, label, at: Date.now() });
+}
+
+/* Mark an employer's view as "Viewed by Employer" on relevant applications */
+function markCandidateViewedByEmployer(candidateUserId, employerUserId) {
+  let changed = false;
+  applications.forEach((app) => {
+    if (app.candidateUserId !== candidateUserId) return;
+    if (app.status !== "applied") return;
+    if (app.candidateArchived) return;
+    const job = jobs.find((j) => j.id === app.jobId);
+    if (!job || job.userId !== employerUserId) return;
+    if (!app.viewedByEmployer) {
+      app.viewedByEmployer = true;
+      pushAppEvent(app, "viewed", "Viewed by employer.");
+      changed = true;
+    }
+  });
+  if (changed) saveArray(STORAGE.applications, applications);
+}
+
 let candidateSkillsDraft = [];
+let candidateLicensesDraft = [];
+let candidateCertificationsDraft = [];
 let jobSkillsDraft = [];
 let workExperienceDraft = [];
 let editingJobId = null;
+let activeEmployerJobId = null;
+let employerJobsView = "list";
+let jobsFilterTitle = "";
+let jobsFilterLocation = "";
 let activeJobDetailId = null;
 let activeRecommendationJobId = null;
+let candidateRecTier = "basic";
 let myJobsTab = "saved";
 let activeThreadKey = null;
+let threadFilter = "all";
+let messagesOnlineStatus = true;
 let applicationsTab = "all";
 let applicationsJobFilterId = "";
 let applicationsSearchText = "";
 let interviewRange = "week";
 let activeSourcingJobId = null;
+let analyticsRangeDays = 30;
 let sourcingSessionCandidates = new Set();
 let prefillInterviewApplicationId = null;
 
@@ -241,57 +360,395 @@ const PAGE_IDS = [
   "employerInterviewsPage",
   "employerSourcingPage",
   "employerToolsPage",
-  "messagesPage"
+  "employerAnalyticsPage",
+  "employerCompanyPage",
+  "messagesPage",
+  "candidateApplyConfirmPage",
+  "candidateApplicationDetailPage",
+  "companiesPage",
+  "companyDetailPage",
+  "premiumPage"
 ];
 
 function navigateTo(pageId) {
   PAGE_IDS.forEach((id) => show($(id), id === pageId));
-  document.querySelectorAll(".nav-link").forEach((btn) => {
+  document.querySelectorAll(".nav-link[data-page]").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.page === pageId);
   });
+  updateEmployerSidebarActive(pageId);
   closeJobDetail();
   closeCandidateDetail();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function updateEmployerSidebarActive(pageId) {
+  const sidebarMap = {
+    employerDashboardPage: "employerDashboardPage",
+    employerApplicationsPage: "employerDashboardPage",
+    employerPostJobPage: null,
+    employerCandidatesPage: "employerCandidatesPage",
+    employerSourcingPage: "employerSourcingPage",
+    employerInterviewsPage: "employerInterviewsPage",
+    employerAnalyticsPage: "employerAnalyticsPage",
+    employerToolsPage: "employerToolsPage",
+    employerCompanyPage: "employerCompanyPage",
+    messagesPage: "messagesPage",
+    premiumPage: "premiumPage"
+  };
+  const sidebarActive = sidebarMap[pageId] !== undefined ? sidebarMap[pageId] : pageId;
+  document.querySelectorAll(".sidebar-link").forEach((btn) => {
+    btn.classList.toggle("active", sidebarActive && btn.dataset.page === sidebarActive);
+  });
+}
+
+function runPageInit(page) {
+  if (page === "candidateProfilePage") loadCandidateForm();
+  if (page === "candidateMyJobsPage") renderMyJobs();
+  if (page === "candidateFindJobsPage") renderFindJobs();
+  if (page === "employerDashboardPage") {
+    employerJobsView = "list";
+    activeEmployerJobId = null;
+    renderEmployerJobsPage();
+  }
+  if (page === "employerPostJobPage" && !editingJobId) loadJobForm(null);
+  if (page === "employerCandidatesPage") {
+    renderCandidatesGrid();
+    refreshRecommendationJobSelector();
+  }
+  if (page === "employerApplicationsPage") renderApplicationsPage();
+  if (page === "employerInterviewsPage") renderInterviewsPage();
+  if (page === "employerSourcingPage") renderSourcingPage();
+  if (page === "employerAnalyticsPage") renderEmployerAnalytics();
+  if (page === "employerToolsPage") renderIntegrations();
+  if (page === "employerCompanyPage") loadEmployerCompanyForm();
+  if (page === "messagesPage") renderMessagesPage();
+  if (page === "companiesPage") renderCompaniesPage();
+  if (page === "premiumPage") renderPremiumPage();
 }
 
 /* ---------- Header / nav visibility ---------- */
 function refreshChrome() {
   const isCandidate = currentUser && currentUser.role === "Candidate";
   const isEmployer = currentUser && currentUser.role === "Employer";
+  document.body.classList.toggle("employer-mode", isEmployer);
   show($("candidateNav"), isCandidate);
-  show($("employerNav"), isEmployer);
-  show($("logoutBtn"), !!currentUser);
+  show($("employerTopNav"), isEmployer);
+  show($("employerSidebar"), isEmployer);
+  show($("logoutBtn"), isCandidate);
   refreshMessageBadges();
 }
 
 function refreshMembershipUI() {
-  const candidateBtn = $("candidateMembershipBtn");
   const employerBtn = $("employerMembershipBtn");
   const isPremium = !!(currentUser && currentUser.membership);
-  if (candidateBtn) {
-    candidateBtn.classList.toggle("is-premium", isPremium);
-    candidateBtn.textContent = isPremium ? "★ Premium Member" : "Upgrade to Premium";
+  const badge = $("profileMembershipBadge");
+  if (badge) {
+    badge.classList.toggle("premium", isPremium);
+    badge.classList.toggle("standard", !isPremium);
+    badge.innerHTML = isPremium
+      ? '<svg viewBox="0 0 24 24" width="11" height="11" fill="#f5b400" stroke="#f5b400" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Premium Member'
+      : "Standard Member";
   }
+  refreshEmployerCompanyBadge();
   if (employerBtn) {
     employerBtn.classList.toggle("is-premium", isPremium);
     employerBtn.textContent = isPremium ? "★ Premium Member" : "Upgrade to Premium";
   }
 }
 
+function refreshEmployerCompanyBadge() {
+  const badge = $("employerCompanyBadge");
+  if (!badge) return;
+  const isPremium = !!(currentUser && currentUser.membership);
+  badge.classList.toggle("premium", isPremium);
+  badge.classList.toggle("standard", !isPremium);
+  badge.textContent = isPremium ? "Premium Employer" : "Standard Employer";
+}
+
+function loadEmployerCompanyForm() {
+  if (!currentUser || currentUser.role !== "Employer") return;
+  const user = users.find((u) => u.id === currentUser.id);
+  if (!user) return;
+  $("employerCompanyName").value = user.company || "";
+  $("employerCompanyEmail").value = user.contactEmail || user.email || "";
+  $("employerCompanyWebsite").value = user.companyWebsite || "";
+  $("employerCompanyIndustry").value = user.companyIndustry || "";
+  $("employerCompanySize").value = user.companySize || "";
+  $("employerCompanyLocation").value = user.companyLocation || "";
+  $("employerCompanyDescription").value = user.companyDescription || "";
+  setStatus($("employerCompanyStatus"), "", null);
+  refreshEmployerCompanyBadge();
+}
+
+function saveEmployerCompanyForm(event) {
+  event.preventDefault();
+  if (!currentUser || currentUser.role !== "Employer") return;
+  const user = users.find((u) => u.id === currentUser.id);
+  if (!user) return;
+
+  const companyName = $("employerCompanyName").value.trim();
+  const contactEmail = $("employerCompanyEmail").value.trim();
+  if (!companyName) {
+    setStatus($("employerCompanyStatus"), "Company name is required.", "error");
+    return;
+  }
+  if (!contactEmail) {
+    setStatus($("employerCompanyStatus"), "Contact email is required.", "error");
+    return;
+  }
+
+  const prevCompany = user.company || "";
+  user.company = companyName;
+  user.contactEmail = contactEmail;
+  user.companyWebsite = $("employerCompanyWebsite").value.trim();
+  user.companyIndustry = $("employerCompanyIndustry").value.trim();
+  user.companySize = $("employerCompanySize").value;
+  user.companyLocation = $("employerCompanyLocation").value.trim();
+  user.companyDescription = $("employerCompanyDescription").value.trim();
+
+  saveArray(STORAGE.users, users);
+  currentUser.company = companyName;
+  saveSessionUser(currentUser);
+
+  if (prevCompany !== companyName) {
+    jobs.forEach((job) => {
+      if (job.userId === currentUser.id) job.company = companyName;
+    });
+    saveArray(STORAGE.jobs, jobs);
+  }
+
+  setStatus($("employerCompanyStatus"), "Company profile saved successfully.", "ok");
+  refreshEmployerCompanyBadge();
+  if ($("jobCompany")) $("jobCompany").value = companyName;
+  if (activeCompanyId && activeCompanyId.toLowerCase() === companyName.toLowerCase()) {
+    renderCompanyDetail();
+  }
+}
+
 function toggleMembership() {
+  if (!currentUser) return;
+  /* Membership upgrades are now handled via the Premium page payment flow.
+     This helper now just navigates the user there. */
+  navigateTo("premiumPage");
+  renderPremiumPage();
+}
+
+function setMembership(active) {
   if (!currentUser) return;
   const user = users.find((u) => u.id === currentUser.id);
   if (!user) return;
-  user.membership = !user.membership;
+  user.membership = !!active;
   saveArray(STORAGE.users, users);
   currentUser.membership = user.membership;
   saveSessionUser(currentUser);
   refreshMembershipUI();
   if (currentUser.role === "Candidate") {
-    renderFindJobs();
-  } else {
-    renderRecommendedCandidates();
+    if (typeof renderFindJobs === "function") renderFindJobs();
+  } else if (currentUser.role === "Employer") {
+    if (typeof renderRecommendedCandidates === "function") renderRecommendedCandidates();
   }
+}
+
+/* ============================================================
+   PREMIUM / MEMBERSHIP PAGE
+   ============================================================ */
+let billingCycle = "monthly";
+
+const PREMIUM_PLANS = {
+  Candidate: {
+    title: "Supercharge your job search",
+    subtitle: "Choose the plan that best fits your career goals. Premium members get hired 3x faster on average.",
+    whyTitle: "Why choose Premium?",
+    basic: {
+      tagline: "Essential tools to get your profile out there and start applying.",
+      features: [
+        "Basic job matching algorithms",
+        "Standard profile visibility",
+        "Apply to up to 50 jobs per month",
+        "Standard email support"
+      ]
+    },
+    premium: {
+      tagline: "Advanced tools to stand out and find your perfect match.",
+      features: [
+        "Advanced semantic fuzzy search & matching",
+        "Priority profile visibility to employers",
+        "Unlimited job applications",
+        "See exact match scores for every job",
+        "Featured badge on your profile",
+        "24/7 Priority support"
+      ],
+      pricing: { monthly: 19, yearlyMonthly: 15, yearlyTotal: 180 }
+    },
+    why: [
+      { icon: "bolt", title: "Get noticed faster", body: "Your profile appears at the top of employer search results, increasing your chances of getting hired." },
+      { icon: "star", title: "Better matches", body: "See your exact compatibility scores with jobs so you know where to focus your energy." },
+      { icon: "check", title: "Apply without limits", body: "Never hit an application cap. Apply to as many dream jobs as you want each month." }
+    ]
+  },
+  Employer: {
+    title: "Supercharge your hiring",
+    subtitle: "Choose the plan that fits your company's hiring needs. Premium employers find perfect matches 3x faster.",
+    whyTitle: "Why choose Premium for Employers?",
+    basic: {
+      tagline: "Essential tools to post jobs and review top applications.",
+      features: [
+        "Post up to 3 active jobs",
+        "View top 10 candidate matches per job",
+        "Basic semantic search capabilities",
+        "Standard company profile",
+        "Email support"
+      ]
+    },
+    premium: {
+      tagline: "Advanced tools to build your team with the best talent.",
+      features: [
+        "Unlimited active job posts",
+        "Unlock ALL candidate matches",
+        "Advanced semantic search with custom filtering",
+        "Featured company profile",
+        "Direct messaging to passive candidates",
+        "24/7 Priority support & account manager"
+      ],
+      pricing: { monthly: 199, yearlyMonthly: 159, yearlyTotal: 1908 }
+    },
+    why: [
+      { icon: "bolt", title: "Fill roles faster", body: "Access our entire talent pool and reach out directly to candidates before they even apply." },
+      { icon: "star", title: "Better quality hires", body: "Our advanced semantic matching ensures you're only spending time on highly qualified candidates." },
+      { icon: "check", title: "Enhance your brand", body: "Stand out with a featured company profile that showcases your culture to top talent." }
+    ]
+  }
+};
+
+function renderPremiumPage() {
+  if (!currentUser) {
+    navigateTo("landingPage");
+    return;
+  }
+  const role = currentUser.role;
+  const plan = PREMIUM_PLANS[role];
+  if (!plan) return;
+
+  $("premiumTitle").textContent = plan.title;
+  $("premiumSubtitle").textContent = plan.subtitle;
+
+  /* Billing toggle state */
+  document.querySelectorAll("#billingToggle .billing-opt").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.billing === billingCycle);
+  });
+
+  /* Basic */
+  $("planBasicTagline").textContent = plan.basic.tagline;
+  $("planBasicFeatures").innerHTML = plan.basic.features.map(featureItemHtml).join("");
+
+  /* Premium */
+  $("planPremiumTagline").textContent = plan.premium.tagline;
+  $("planPremiumFeatures").innerHTML = plan.premium.features.map(featureItemHtml).join("");
+
+  const isYearly = billingCycle === "yearly";
+  const price = isYearly ? plan.premium.pricing.yearlyMonthly : plan.premium.pricing.monthly;
+  $("planPremiumAmount").textContent = `$${price}`;
+  const billedEl = $("planPremiumBilled");
+  if (isYearly) {
+    billedEl.classList.remove("hidden");
+    billedEl.textContent = `Billed $${plan.premium.pricing.yearlyTotal.toLocaleString()} yearly`;
+  } else {
+    billedEl.classList.add("hidden");
+  }
+
+  /* Current plan state */
+  const isPremium = !!currentUser.membership;
+  const basicCta = $("planBasicCta");
+  const premCta = $("planPremiumCta");
+  const premLabel = $("planPremiumCtaLabel");
+  if (isPremium) {
+    basicCta.classList.remove("is-current");
+    basicCta.textContent = "Downgrade";
+    premCta.classList.add("is-current");
+    premLabel.textContent = "Current Plan";
+  } else {
+    basicCta.classList.add("is-current");
+    basicCta.textContent = "Current Plan";
+    premCta.classList.remove("is-current");
+    premLabel.textContent = "Upgrade to Premium";
+  }
+
+  /* Why choose Premium */
+  $("whyPremiumTitle").lastChild.textContent = " " + plan.whyTitle;
+  $("whyPremiumGrid").innerHTML = plan.why.map((w) => `
+    <div class="why-item">
+      <div class="why-icon">${whyIconSvg(w.icon)}</div>
+      <h4>${escapeHtml(w.title)}</h4>
+      <p>${escapeHtml(w.body)}</p>
+    </div>
+  `).join("");
+}
+
+function featureItemHtml(text) {
+  return `<li>
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    <span>${escapeHtml(text)}</span>
+  </li>`;
+}
+
+function whyIconSvg(name) {
+  if (name === "bolt") return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>';
+  if (name === "star") return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+  return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+}
+
+/* ---------- Payment modal ---------- */
+function openPaymentModal() {
+  if (!currentUser) return;
+  if (currentUser.membership) return; // already premium
+  const plan = PREMIUM_PLANS[currentUser.role];
+  if (!plan) return;
+  const isYearly = billingCycle === "yearly";
+  const price = isYearly ? plan.premium.pricing.yearlyMonthly : plan.premium.pricing.monthly;
+  const planNameEl = $("paymentPlanName");
+  if (planNameEl) {
+    planNameEl.textContent = currentUser.role === "Employer" ? "Employer Premium Plan" : "Candidate Premium Plan";
+  }
+  $("paymentPlanAmount").textContent = `$${price}/mo`;
+
+  /* Reset form/success states */
+  $("paymentForm").reset();
+  show($("paymentFormView"), true);
+  show($("paymentSuccessView"), false);
+
+  show($("paymentModal"), true);
+}
+
+function closePaymentModal() {
+  show($("paymentModal"), false);
+}
+
+function handlePaymentSubmit(e) {
+  e.preventDefault();
+  /* Mock payment validation */
+  const num = $("cardNumber").value.replace(/\s+/g, "");
+  const exp = $("cardExpiry").value.trim();
+  const cvc = $("cardCvc").value.trim();
+  if (num.length < 12 || !/^\d{2}\/\d{2}$/.test(exp) || cvc.length < 3) {
+    /* In a real app we'd show field-level errors; for the mock flow, accept anything non-empty */
+    if (!num || !exp || !cvc) {
+      alert("Please complete all card details to continue.");
+      return;
+    }
+  }
+
+  /* Activate membership and show success */
+  setMembership(true);
+  show($("paymentFormView"), false);
+  show($("paymentSuccessView"), true);
+
+  setTimeout(() => {
+    closePaymentModal();
+    renderPremiumPage();
+    if (currentUser.role === "Employer" && typeof renderRecommendedCandidates === "function") {
+      renderRecommendedCandidates();
+    }
+  }, 1800);
 }
 
 /* ---------- Auth ---------- */
@@ -354,9 +811,12 @@ function doLogout() {
   currentUser = null;
   saveSessionUser(null);
   candidateSkillsDraft = [];
+  candidateLicensesDraft = [];
+  candidateCertificationsDraft = [];
   jobSkillsDraft = [];
   workExperienceDraft = [];
   editingJobId = null;
+  document.body.classList.remove("employer-mode", "sidebar-collapsed");
   refreshChrome();
   navigateTo("landingPage");
 }
@@ -375,38 +835,77 @@ function getCurrentCandidateProfile() {
   return candidates.find((c) => c.userId === currentUser.id) || null;
 }
 
+function normalizeEducation(value) {
+  if (!value) return "";
+  const map = { Bachelor: "Bachelor's Degree", Master: "Master's Degree" };
+  return map[value] || value;
+}
+
+function computeExperienceYears(workExp) {
+  if (!workExp || !workExp.length) return 0;
+  const currentYear = new Date().getFullYear();
+  let total = 0;
+  workExp.forEach((w) => {
+    const start = Number(w.startYear) || currentYear;
+    const end = w.endYear ? Number(w.endYear) : currentYear;
+    if (end >= start) total += end - start + 1;
+  });
+  return Math.min(total, 50);
+}
+
 function loadCandidateForm() {
   const profile = getCurrentCandidateProfile();
-  candidateSkillsDraft = profile ? [...profile.skills] : [];
+  candidateSkillsDraft = profile ? [...(profile.skills || [])] : [];
+  candidateLicensesDraft = profile ? [...(profile.licenses || [])] : [];
+  candidateCertificationsDraft = profile ? [...(profile.certifications || [])] : [];
   workExperienceDraft = profile ? profile.workExperience.map((w) => ({ ...w })) : [];
 
   $("candidateName").value = profile ? profile.name : (currentUser ? currentUser.name : "");
   $("candidateEmail").value = profile ? profile.email : (currentUser ? currentUser.email : "");
   $("candidateContact").value = profile ? profile.contact || "" : "";
   $("candidateLocation").value = profile ? profile.preferredLocation || "" : "";
-  $("candidateEducation").value = profile ? profile.education || "" : "";
+  $("candidateEducation").value = profile ? normalizeEducation(profile.education || "") : "";
   $("candidateMajor").value = profile ? profile.major || "" : "";
-  $("candidateExperience").value = profile ? String(profile.experience || 0) : "";
+  $("candidateUniversity").value = profile ? profile.university || "" : "";
   $("candidateWorkMode").value = profile ? profile.preferredWorkMode || "Any" : "Any";
 
+  const certPreview = $("certificatePreviewName");
+  if (certPreview) certPreview.textContent = profile && profile.certificateFileName ? profile.certificateFileName : "";
+  const resumePreview = $("resumePreviewName");
+  if (resumePreview) resumePreview.textContent = profile && profile.resumeFileName ? profile.resumeFileName : "";
+
   renderSkillChips($("candidateSkillsChips"), candidateSkillsDraft, "candidate");
+  renderSkillChips($("candidateLicensesChips"), candidateLicensesDraft, "licenses");
+  renderSkillChips($("candidateCertificationsChips"), candidateCertificationsDraft, "certifications");
   renderWorkExperience();
+  refreshMembershipUI();
+}
+
+function getChipDraft(scope) {
+  if (scope === "candidate") return candidateSkillsDraft;
+  if (scope === "licenses") return candidateLicensesDraft;
+  if (scope === "certifications") return candidateCertificationsDraft;
+  return jobSkillsDraft;
+}
+
+function setChipDraft(scope, list) {
+  if (scope === "candidate") candidateSkillsDraft = list;
+  else if (scope === "licenses") candidateLicensesDraft = list;
+  else if (scope === "certifications") candidateCertificationsDraft = list;
+  else jobSkillsDraft = list;
 }
 
 function renderSkillChips(container, list, scope) {
+  if (!container) return;
   container.innerHTML = "";
   list.forEach((skill) => {
     const chip = document.createElement("span");
     chip.className = "chip";
     chip.innerHTML = `${escapeHtml(skill)} <button type="button" aria-label="Remove ${escapeHtml(skill)}">&times;</button>`;
     chip.querySelector("button").addEventListener("click", () => {
-      if (scope === "candidate") {
-        candidateSkillsDraft = candidateSkillsDraft.filter((s) => s !== skill);
-        renderSkillChips(container, candidateSkillsDraft, scope);
-      } else {
-        jobSkillsDraft = jobSkillsDraft.filter((s) => s !== skill);
-        renderSkillChips(container, jobSkillsDraft, scope);
-      }
+      const next = getChipDraft(scope).filter((s) => s !== skill);
+      setChipDraft(scope, next);
+      renderSkillChips(container, next, scope);
     });
     container.appendChild(chip);
   });
@@ -421,20 +920,23 @@ function skillListIncludes(list, value) {
 }
 
 function attachChipInput(input, container, scope) {
+  if (!input) return;
   input.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === ",") {
       event.preventDefault();
       const value = input.value.replace(/,$/, "").trim();
       if (!value) return;
-      const list = scope === "candidate" ? candidateSkillsDraft : jobSkillsDraft;
+      const list = getChipDraft(scope);
       if (!skillListIncludes(list, value)) {
         list.push(value);
+        setChipDraft(scope, list);
         renderSkillChips(container, list, scope);
       }
       input.value = "";
     } else if (event.key === "Backspace" && !input.value) {
-      const list = scope === "candidate" ? candidateSkillsDraft : jobSkillsDraft;
+      const list = getChipDraft(scope);
       list.pop();
+      setChipDraft(scope, list);
       renderSkillChips(container, list, scope);
     }
   });
@@ -446,7 +948,7 @@ function renderWorkExperience() {
   if (!workExperienceDraft.length) {
     const empty = document.createElement("div");
     empty.className = "work-exp-empty";
-    empty.textContent = "No work experience added yet. Add entries to improve match quality.";
+    empty.textContent = "No work experience added yet.";
     wrap.appendChild(empty);
     return;
   }
@@ -475,20 +977,35 @@ function renderWorkExperience() {
 function saveCandidateProfile(event) {
   event.preventDefault();
   if (!currentUser) return;
+  const existing = getCurrentCandidateProfile();
   const profile = {
-    id: getCurrentCandidateProfile()?.id || createId("candidate"),
+    id: existing?.id || createId("candidate"),
     userId: currentUser.id,
     name: $("candidateName").value.trim(),
     email: $("candidateEmail").value.trim().toLowerCase(),
     contact: $("candidateContact").value.trim(),
     education: $("candidateEducation").value,
     major: $("candidateMajor").value.trim(),
-    experience: Number($("candidateExperience").value) || 0,
+    university: $("candidateUniversity").value.trim(),
+    experience: computeExperienceYears(workExperienceDraft) || (existing ? existing.experience : 0),
     skills: [...candidateSkillsDraft],
+    licenses: [...candidateLicensesDraft],
+    certifications: [...candidateCertificationsDraft],
     preferredWorkMode: $("candidateWorkMode").value,
     preferredLocation: $("candidateLocation").value.trim(),
-    workExperience: workExperienceDraft.map((w) => ({ ...w }))
+    workExperience: workExperienceDraft.map((w) => ({ ...w })),
+    certificateFileName: existing?.certificateFileName || "",
+    resumeFileName: existing?.resumeFileName || ""
   };
+
+  const certInput = $("candidateCertificate");
+  if (certInput && certInput.files && certInput.files[0]) {
+    profile.certificateFileName = certInput.files[0].name;
+  }
+  const resumeInput = $("candidateResume");
+  if (resumeInput && resumeInput.files && resumeInput.files[0]) {
+    profile.resumeFileName = resumeInput.files[0].name;
+  }
 
   const idx = candidates.findIndex((c) => c.userId === currentUser.id);
   if (idx >= 0) candidates[idx] = profile;
@@ -520,7 +1037,6 @@ function handleResumeExtraction() {
     const parsedName = extractValue(cleaned, ["name", "full name"]);
     const parsedEducation = extractValue(cleaned, ["education", "qualification"]);
     const parsedMajor = extractValue(cleaned, ["major", "field", "field of study"]);
-    const parsedExp = extractValue(cleaned, ["experience", "years of experience"]);
     const parsedSkills = extractValue(cleaned, ["skills", "technical skills"]);
     const parsedContact = extractValue(cleaned, ["contact", "email", "phone"]);
 
@@ -528,10 +1044,6 @@ function handleResumeExtraction() {
     if (parsedContact) $("candidateContact").value = parsedContact;
     if (parsedEducation && educationRank[parsedEducation]) $("candidateEducation").value = parsedEducation;
     if (parsedMajor) $("candidateMajor").value = parsedMajor;
-    if (parsedExp) {
-      const numeric = Number(parsedExp.replace(/[^\d.]/g, ""));
-      if (!Number.isNaN(numeric)) $("candidateExperience").value = String(numeric);
-    }
     if (parsedSkills) {
       const incoming = parsedSkills
         .split(/[,\u2022\n;]+/)
@@ -611,10 +1123,12 @@ function ownedJobs() {
 function loadJobForm(jobId) {
   $("jobForm").reset();
   jobSkillsDraft = [];
+  const submitBtn = $("jobSubmitBtn");
   if (!jobId) {
     editingJobId = null;
     $("jobFormTitle").textContent = "Create Job Posting";
     $("jobCompany").value = (currentUser && currentUser.company) || "";
+    if (submitBtn) submitBtn.textContent = "Post Job";
     show($("cancelJobEditBtn"), false);
   } else {
     const job = jobs.find((j) => j.id === jobId);
@@ -632,6 +1146,7 @@ function loadJobForm(jobId) {
     $("jobSalaryMin").value = job.salaryMin || "";
     $("jobSalaryMax").value = job.salaryMax || "";
     jobSkillsDraft = [...job.requiredSkills];
+    if (submitBtn) submitBtn.textContent = "Save Changes";
     show($("cancelJobEditBtn"), true);
   }
   renderSkillChips($("jobSkillsChips"), jobSkillsDraft, "job");
@@ -663,11 +1178,12 @@ function saveJob(event) {
     jobs.push(payload);
   }
   saveArray(STORAGE.jobs, jobs);
+  const wasEdit = !!editingJobId;
   editingJobId = null;
   jobSkillsDraft = [];
-  setStatus($("jobStatus"), "Job posted successfully.", "ok");
+  setStatus($("jobStatus"), wasEdit ? "Changes saved successfully." : "Job posted successfully.", "ok");
   loadJobForm(null);
-  renderMyJobPostings();
+  renderEmployerJobsPage();
   refreshRecommendationJobSelector();
   navigateTo("employerDashboardPage");
 }
@@ -678,21 +1194,478 @@ function deleteJob(jobId) {
   saveArray(STORAGE.jobs, jobs);
   applications = applications.filter((a) => a.jobId !== jobId);
   saveArray(STORAGE.applications, applications);
-  renderMyJobPostings();
+  if (activeEmployerJobId === jobId) {
+    activeEmployerJobId = null;
+    employerJobsView = "list";
+  }
+  renderEmployerJobsPage();
   refreshRecommendationJobSelector();
 }
 
-function renderMyJobPostings() {
-  const wrap = $("myJobPostingsList");
+function formatAppliedDate(ts) {
+  if (!ts) return "—";
+  const d = new Date(ts);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function applicantDisplayStatus(app) {
+  const s = app.employerStatus || "applied";
+  if (s === "applied" && app.viewedByEmployer) return { label: "Reviewed", cls: "reviewed" };
+  if (s === "applied") return { label: "Pending", cls: "pending" };
+  if (s === "shortlisted") return { label: "Reviewed", cls: "reviewed" };
+  if (s === "interview_scheduled") return { label: "Interview", cls: "interview" };
+  if (s === "rejected") return { label: "Rejected", cls: "rejected" };
+  return { label: APP_STATUS_LABELS[s] || s, cls: "pending" };
+}
+
+function applicationsForJob(jobId) {
+  return applications
+    .filter((a) => a.jobId === jobId && a.status === "applied" && !a.candidateArchived)
+    .sort((a, b) => b.createdAt - a.createdAt);
+}
+
+function filterEmployerJobs(list) {
+  let filtered = list.slice();
+  if (jobsFilterTitle.trim()) {
+    const q = jobsFilterTitle.trim();
+    filtered = filtered.filter((j) => fuzzyMatch(q, `${j.title} ${j.company}`));
+  }
+  if (jobsFilterLocation.trim()) {
+    const q = jobsFilterLocation.trim();
+    filtered = filtered.filter((j) => fuzzyMatch(q, j.location || ""));
+  }
+  return filtered;
+}
+
+function openEmployerJobDetail(jobId) {
+  activeEmployerJobId = jobId;
+  employerJobsView = "detail";
+  renderEmployerJobsPage();
+}
+
+function closeEmployerJobDetail() {
+  employerJobsView = "list";
+  activeEmployerJobId = null;
+  renderEmployerJobsPage();
+}
+
+function renderEmployerJobsPage() {
+  if (!currentUser || currentUser.role !== "Employer") return;
   const myJobs = ownedJobs();
-  wrap.innerHTML = "";
+  const emptyHero = $("employerJobsEmptyHero");
+  const shell = $("employerJobsShell");
+  const listView = $("employerJobsListView");
+  const detailView = $("employerJobDetailView");
+
   if (!myJobs.length) {
-    wrap.innerHTML = '<div class="empty">No jobs posted yet. Click "Create Your First Job Post" to begin.</div>';
+    show(emptyHero, true);
+    show(shell, false);
     return;
   }
-  myJobs.forEach((job) => {
-    wrap.appendChild(buildJobCard(job, { showManage: true }));
+  show(emptyHero, false);
+  show(shell, true);
+
+  if (employerJobsView === "detail" && activeEmployerJobId) {
+    show(listView, false);
+    show(detailView, true);
+    renderEmployerJobDetail(activeEmployerJobId);
+    return;
+  }
+
+  show(listView, true);
+  show(detailView, false);
+
+  const filtered = filterEmployerJobs(myJobs);
+  const countEl = $("jobsResultCount");
+  if (countEl) countEl.textContent = `${filtered.length} result${filtered.length === 1 ? "" : "s"}`;
+
+  const tbody = $("employerJobsTableBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="4"><div class="empty">No jobs match your filters.</div></td></tr>';
+    return;
+  }
+
+  filtered.forEach((job) => {
+    const tr = document.createElement("tr");
+    tr.className = "job-row-clickable";
+    tr.innerHTML = `
+      <td class="job-title-cell">
+        <strong>${escapeHtml(job.title)}</strong>
+        <small>${escapeHtml(job.workMode)}</small>
+      </td>
+      <td>${escapeHtml(job.location)}</td>
+      <td><span class="job-status-active">Active</span></td>
+      <td>
+        <div class="jobs-row-actions">
+          <button type="button" class="edit-link" data-edit-job="${escapeHtml(job.id)}">Edit</button>
+          <button type="button" class="view-link" data-view-applicants="${escapeHtml(job.id)}">View Applicants</button>
+        </div>
+      </td>
+    `;
+    tr.addEventListener("click", (e) => {
+      if (e.target.closest("[data-edit-job]") || e.target.closest("[data-view-applicants]")) return;
+      openEmployerJobDetail(job.id);
+    });
+    tr.querySelector("[data-edit-job]").addEventListener("click", (e) => {
+      e.stopPropagation();
+      loadJobForm(job.id);
+      navigateTo("employerPostJobPage");
+    });
+    tr.querySelector("[data-view-applicants]").addEventListener("click", (e) => {
+      e.stopPropagation();
+      openEmployerJobDetail(job.id);
+    });
+    tbody.appendChild(tr);
   });
+}
+
+function renderEmployerJobDetail(jobId) {
+  const job = jobs.find((j) => j.id === jobId);
+  if (!job) return;
+  const apps = applicationsForJob(jobId);
+
+  const header = $("employerJobDetailHeader");
+  if (header) {
+    header.innerHTML = `
+      <div>
+        <h2>${escapeHtml(job.title)}</h2>
+        <div class="meta">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          ${escapeHtml(job.workMode)} &bull; ${escapeHtml(job.location)}
+        </div>
+      </div>
+      <span class="applicants-count-badge">Total Applicants: ${apps.length}</span>
+    `;
+  }
+
+  const tbody = $("employerJobApplicantsBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  if (!apps.length) {
+    tbody.innerHTML = '<tr><td colspan="4"><div class="empty">No applicants yet for this role.</div></td></tr>';
+    return;
+  }
+
+  apps.forEach((app) => {
+    const cand = getCandidateInfo(app.candidateUserId);
+    if (!cand) return;
+    const initials = (cand.name || "?").split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
+    const status = applicantDisplayStatus(app);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>
+        <div class="applicant-cell">
+          <span class="applicant-avatar">${escapeHtml(initials)}</span>
+          <div>
+            <strong>${escapeHtml(cand.name)}</strong>
+            <small>${escapeHtml(cand.email || "")}</small>
+          </div>
+        </div>
+      </td>
+      <td>
+        <span class="applied-date-cell">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          ${escapeHtml(formatAppliedDate(app.createdAt))}
+        </span>
+      </td>
+      <td><span class="app-pill ${status.cls}">${escapeHtml(status.label)}</span></td>
+      <td><button type="button" class="view-profile-link" data-view-profile="${escapeHtml(app.candidateUserId)}">View Profile</button></td>
+    `;
+    tr.querySelector("[data-view-profile]").addEventListener("click", () => {
+      markCandidateViewedByEmployer(app.candidateUserId, currentUser.id);
+      openCandidateDetail(app.candidateUserId);
+      renderEmployerJobDetail(jobId);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+/** @deprecated use renderEmployerJobsPage */
+function renderMyJobPostings() {
+  renderEmployerJobsPage();
+}
+
+function renderEmployerAnalytics() {
+  if (!currentUser || currentUser.role !== "Employer") return;
+  const data = buildEmployerAnalyticsData(analyticsRangeDays);
+  renderAnalyticsKpis(data.kpis);
+  renderAnalyticsPipelineChart(data.pipeline);
+  renderAnalyticsDeptBars(data.departments);
+  renderAnalyticsInsight(data.insight);
+  const rangeSelect = $("analyticsRangeSelect");
+  if (rangeSelect) rangeSelect.value = String(analyticsRangeDays);
+}
+
+const ANALYTICS_DEPT_RULES = [
+  { name: "Engineering", keywords: ["engineer", "developer", "frontend", "backend", "devops", "software", "swe"] },
+  { name: "Design", keywords: ["design", "ux", "ui", "creative"] },
+  { name: "Product", keywords: ["product", "pm ", "project manager"] },
+  { name: "Marketing", keywords: ["marketing", "content", "seo", "brand"] },
+  { name: "Sales", keywords: ["sales", "account", "business development", "bd "] }
+];
+
+function inferJobDepartment(title) {
+  const t = String(title || "").toLowerCase();
+  for (const dept of ANALYTICS_DEPT_RULES) {
+    if (dept.keywords.some((k) => t.includes(k))) return dept.name;
+  }
+  return "Other";
+}
+
+function analyticsWindow(days) {
+  const end = Date.now();
+  const start = end - days * 86400000;
+  return { start, end, prevStart: start - days * 86400000, prevEnd: start };
+}
+
+function trendPercent(current, previous) {
+  if (!previous) return current ? 100 : 0;
+  return Math.round(((current - previous) / previous) * 100);
+}
+
+function formatTrend(delta, unit, invert) {
+  if (delta === 0) return { text: "—", dir: "up" };
+  const positive = invert ? delta < 0 : delta > 0;
+  const arrow = positive ? "↑" : "↓";
+  const abs = Math.abs(delta);
+  const suffix = unit === "days" ? ` ${abs} day${abs === 1 ? "" : "s"}` : `%`;
+  return { text: `${arrow} ${unit === "days" ? abs + " days" : abs + "%"}`, dir: positive ? "up" : "down" };
+}
+
+function buildEmployerAnalyticsData(days) {
+  const myJobs = ownedJobs();
+  const myJobIds = new Set(myJobs.map((j) => j.id));
+  const allApps = applications.filter((a) => myJobIds.has(a.jobId) && a.status === "applied");
+  const ivs = employerInterviews();
+  const { start, end, prevStart, prevEnd } = analyticsWindow(days);
+
+  const appsCurrent = allApps.filter((a) => a.createdAt >= start && a.createdAt <= end);
+  const appsPrev = allApps.filter((a) => a.createdAt >= prevStart && a.createdAt < prevEnd);
+
+  const activeJobs = myJobs.length;
+  const activeJobsPrev = new Set(appsPrev.map((a) => a.jobId)).size;
+  const activeJobsCurrent = new Set(appsCurrent.map((a) => a.jobId)).size || activeJobs;
+  const totalApplicants = appsCurrent.length;
+  const hiresMade = appsCurrent.filter((a) =>
+    a.employerStatus === "shortlisted" || a.employerStatus === "interview_scheduled"
+  ).length;
+
+  const hireDurations = [];
+  allApps.forEach((app) => {
+    const iv = ivs.find((i) => i.applicationId === app.id || (i.candidateUserId === app.candidateUserId && i.jobId === app.jobId));
+    if (iv && iv.dateTime && app.createdAt) {
+      const daysToHire = Math.max(1, Math.round((new Date(iv.dateTime).getTime() - app.createdAt) / 86400000));
+      hireDurations.push(daysToHire);
+    }
+  });
+  const avgTimeToHire = hireDurations.length
+    ? Math.round(hireDurations.reduce((s, d) => s + d, 0) / hireDurations.length)
+    : (totalApplicants ? 28 : 0);
+
+  const prevApplicants = appsPrev.length;
+  const prevHires = appsPrev.filter((a) =>
+    a.employerStatus === "shortlisted" || a.employerStatus === "interview_scheduled"
+  ).length;
+
+  const prevHireDurations = [];
+  allApps.filter((a) => a.createdAt >= prevStart && a.createdAt < prevEnd).forEach((app) => {
+    const iv = ivs.find((i) => i.applicationId === app.id || (i.candidateUserId === app.candidateUserId && i.jobId === app.jobId));
+    if (iv && iv.dateTime && app.createdAt) {
+      prevHireDurations.push(Math.max(1, Math.round((new Date(iv.dateTime).getTime() - app.createdAt) / 86400000)));
+    }
+  });
+  const prevAvgTime = prevHireDurations.length
+    ? Math.round(prevHireDurations.reduce((s, d) => s + d, 0) / prevHireDurations.length)
+    : avgTimeToHire;
+
+  const kpis = [
+    {
+      label: "Active Jobs",
+      value: activeJobs,
+      icon: "briefcase",
+      trend: formatTrend(trendPercent(activeJobsCurrent, activeJobsPrev || 1), "pct")
+    },
+    {
+      label: "Total Applicants",
+      value: totalApplicants,
+      icon: "users",
+      trend: formatTrend(trendPercent(totalApplicants, prevApplicants), "pct")
+    },
+    {
+      label: "Hires Made",
+      value: hiresMade,
+      icon: "user-check",
+      trend: formatTrend(trendPercent(hiresMade, prevHires), "pct")
+    },
+    {
+      label: "Avg. Time to Hire",
+      value: avgTimeToHire ? `${avgTimeToHire} days` : "—",
+      icon: "calendar",
+      trend: formatTrend(avgTimeToHire - prevAvgTime, "days", true)
+    }
+  ];
+
+  const monthCount = days <= 90 ? 4 : 7;
+  const pipeline = [];
+  const now = new Date();
+  for (let i = monthCount - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthStart = d.getTime();
+    const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59).getTime();
+    const monthApps = allApps.filter((a) => a.createdAt >= monthStart && a.createdAt <= monthEnd);
+    pipeline.push({
+      label: d.toLocaleDateString(undefined, { month: "short" }),
+      applied: monthApps.length,
+      shortlisted: monthApps.filter((a) => a.employerStatus === "shortlisted").length,
+      hired: monthApps.filter((a) => a.employerStatus === "interview_scheduled").length
+    });
+  }
+
+  const deptMap = new Map();
+  ANALYTICS_DEPT_RULES.forEach((d) => deptMap.set(d.name, []));
+  myJobs.forEach((job) => {
+    const dept = inferJobDepartment(job.title);
+    if (!deptMap.has(dept)) return;
+    const jobApps = allApps.filter((a) => a.jobId === job.id);
+    jobApps.forEach((app) => {
+      const iv = ivs.find((i) => i.applicationId === app.id || (i.candidateUserId === app.candidateUserId && i.jobId === app.jobId));
+      if (iv && iv.dateTime && app.createdAt) {
+        deptMap.get(dept).push(
+          Math.max(1, Math.round((new Date(iv.dateTime).getTime() - app.createdAt) / 86400000))
+        );
+      }
+    });
+  });
+
+  const deptColors = {
+    Engineering: "#ef4444",
+    Design: "#14b8a6",
+    Product: "#f97316",
+    Marketing: "#14b8a6",
+    Sales: "#14b8a6"
+  };
+  const deptDefaults = { Engineering: 45, Design: 28, Product: 35, Marketing: 22, Sales: 18 };
+  const departments = ANALYTICS_DEPT_RULES.map((d) => {
+    const vals = deptMap.get(d.name) || [];
+    const avg = vals.length ? Math.round(vals.reduce((s, v) => s + v, 0) / vals.length) : deptDefaults[d.name];
+    return { name: d.name, days: avg, color: deptColors[d.name], max: 50 };
+  });
+
+  const companyAvg = departments.reduce((s, d) => s + d.days, 0) / departments.length;
+  const slowest = departments.slice().sort((a, b) => b.days - a.days)[0];
+  const pctLonger = slowest && companyAvg
+    ? Math.round(((slowest.days - companyAvg) / companyAvg) * 100)
+    : 60;
+  const insight = {
+    dept: slowest ? slowest.name : "Engineering",
+    pct: Math.max(20, pctLonger)
+  };
+
+  return { kpis, pipeline, departments, insight, allApps, myJobs };
+}
+
+function analyticsKpiIcon(name) {
+  if (name === "briefcase") return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+  if (name === "users") return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"></circle><path d="M2 21c0-4 3-6 7-6"></path><circle cx="17" cy="11" r="3"></circle><path d="M12 21c0-3 2-5 5-5s5 2 5 5"></path></svg>';
+  if (name === "user-check") return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>';
+  return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
+}
+
+function renderAnalyticsKpis(kpis) {
+  const row = $("analyticsKpiRow");
+  if (!row) return;
+  row.innerHTML = kpis.map((k) => `
+    <article class="analytics-kpi-card">
+      <div class="analytics-kpi-top">
+        <p class="analytics-kpi-label">${escapeHtml(k.label)}</p>
+        <span class="analytics-kpi-icon">${analyticsKpiIcon(k.icon)}</span>
+      </div>
+      <p class="analytics-kpi-value">${escapeHtml(String(k.value))}</p>
+      <span class="analytics-kpi-trend ${k.trend.dir}">${escapeHtml(k.trend.text)}</span>
+    </article>
+  `).join("");
+}
+
+function renderAnalyticsPipelineChart(pipeline) {
+  const wrap = $("analyticsPipelineChart");
+  if (!wrap) return;
+  if (!pipeline.length) {
+    wrap.innerHTML = '<div class="empty">No pipeline data for this period yet.</div>';
+    return;
+  }
+  const maxVal = Math.max(1, ...pipeline.flatMap((m) => [m.applied, m.shortlisted, m.hired]));
+  const ticks = [maxVal, Math.round(maxVal * 0.66), Math.round(maxVal * 0.33), 0];
+  wrap.innerHTML = `
+    <div class="analytics-pipeline-y-axis">${ticks.map((t) => `<span>${t}</span>`).join("")}</div>
+    ${pipeline.map((m) => {
+      const h = (v) => `${Math.max(4, Math.round((v / maxVal) * 100))}%`;
+      return `
+        <div class="analytics-pipeline-month">
+          <div class="analytics-pipeline-bars">
+            <div class="analytics-pipeline-bar applied" style="height:${h(m.applied)}" title="Applied: ${m.applied}"></div>
+            <div class="analytics-pipeline-bar shortlisted" style="height:${h(m.shortlisted)}" title="Shortlisted: ${m.shortlisted}"></div>
+            <div class="analytics-pipeline-bar hired" style="height:${h(m.hired)}" title="Hired: ${m.hired}"></div>
+          </div>
+          <span class="analytics-pipeline-month-label">${escapeHtml(m.label)}</span>
+        </div>`;
+    }).join("")}
+  `;
+}
+
+function renderAnalyticsDeptBars(departments) {
+  const wrap = $("analyticsDeptBars");
+  if (!wrap) return;
+  wrap.innerHTML = departments.map((d) => {
+    const pct = Math.min(100, Math.round((d.days / d.max) * 100));
+    return `
+      <div class="analytics-dept-row">
+        <label>${escapeHtml(d.name)}</label>
+        <div class="analytics-dept-track">
+          <div class="analytics-dept-fill" style="width:${pct}%; background:${d.color};"></div>
+        </div>
+        <span class="analytics-dept-days">${d.days}d</span>
+      </div>`;
+  }).join("");
+}
+
+function renderAnalyticsInsight(insight) {
+  const el = $("analyticsInsight");
+  if (!el) return;
+  el.innerHTML = `
+    <h4>Insight</h4>
+    <p><strong>${escapeHtml(insight.dept)}</strong> roles take <strong>${insight.pct}% longer</strong> to fill than the company average. Consider increasing sourcing efforts.</p>
+  `;
+}
+
+function exportAnalyticsReport() {
+  const data = buildEmployerAnalyticsData(analyticsRangeDays);
+  const lines = [
+    "Matchify Recruiting Analytics Report",
+    `Period: Last ${analyticsRangeDays} days`,
+    "",
+    "Key Metrics",
+    ...data.kpis.map((k) => `${k.label},${k.value},${k.trend.text}`),
+    "",
+    "Pipeline by Month",
+    "Month,Applied,Shortlisted,Hired",
+    ...data.pipeline.map((m) => `${m.label},${m.applied},${m.shortlisted},${m.hired}`),
+    "",
+    "Avg Days to Hire by Department",
+    "Department,Days",
+    ...data.departments.map((d) => `${d.name},${d.days}`)
+  ];
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `matchify-analytics-${analyticsRangeDays}d.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 /* ---------- Scoring ---------- */
@@ -1039,32 +2012,806 @@ function applicationFor(jobId, status) {
 function toggleApplication(jobId, status) {
   if (!currentUser || currentUser.role !== "Candidate") return;
   const existing = applicationFor(jobId, status);
+  let didApply = false;
   if (existing) {
     applications = applications.filter((a) => a.id !== existing.id);
   } else {
+    const now = Date.now();
+    const events = [];
+    if (status === "applied") {
+      events.push({ kind: "submitted", label: "Application successfully submitted.", at: now });
+    }
     applications.push({
       id: createId("app"),
       candidateUserId: currentUser.id,
       jobId,
       status,
       employerStatus: status === "applied" ? "applied" : null,
-      createdAt: Date.now()
+      viewedByEmployer: false,
+      candidateArchived: false,
+      events,
+      createdAt: now
     });
+    didApply = status === "applied";
   }
   saveArray(STORAGE.applications, applications);
   if (activeJobDetailId === jobId) openJobDetail(jobId);
   renderMyJobs();
+
+  if (didApply) {
+    const job = jobs.find((j) => j.id === jobId);
+    if (job) showApplyConfirm(job);
+  }
+}
+
+/* ---------- Apply confirmation page ---------- */
+function showApplyConfirm(job) {
+  const msgEl = $("applyConfirmMessage");
+  if (msgEl) {
+    msgEl.innerHTML = `You have successfully applied for the <strong>${escapeHtml(job.title)}</strong> role at <strong>${escapeHtml(job.company)}</strong>.`;
+  }
+  closeJobDetail();
+  navigateTo("candidateApplyConfirmPage");
+}
+
+/* ---------- Application Detail page (candidate-side) ---------- */
+let activeApplicationDetailId = null;
+
+function openApplicationDetail(appId) {
+  if (!currentUser || currentUser.role !== "Candidate") return;
+  const app = applications.find((a) => a.id === appId && a.candidateUserId === currentUser.id);
+  if (!app) return;
+  activeApplicationDetailId = appId;
+  renderApplicationDetail();
+  navigateTo("candidateApplicationDetailPage");
+}
+
+function renderApplicationDetail() {
+  const container = $("appDetailContent");
+  if (!container) return;
+  const app = applications.find((a) => a.id === activeApplicationDetailId);
+  if (!app) {
+    container.innerHTML = '<div class="empty">Application not found.</div>';
+    return;
+  }
+  const job = jobs.find((j) => j.id === app.jobId);
+  if (!job) {
+    container.innerHTML = '<div class="empty">This job listing is no longer available.</div>';
+    return;
+  }
+  const cand = getCandidateInfo(currentUser.id);
+  const interview = interviews.find((iv) => iv.candidateUserId === currentUser.id && iv.jobId === app.jobId);
+  const badge = candidateStatusBadge(app);
+
+  const eventsSorted = (Array.isArray(app.events) ? app.events : []).slice().sort((a, b) => b.at - a.at);
+  const fallbackEvent = { kind: "submitted", label: "Application Submitted.", at: app.createdAt };
+  const allEvents = eventsSorted.length ? eventsSorted : [fallbackEvent];
+  /* Always show "Application Submitted" anchor at the bottom */
+  const hasSubmittedAnchor = allEvents.some((e) => e.kind === "submitted");
+  const timelineEvents = hasSubmittedAnchor ? allEvents : allEvents.concat([fallbackEvent]);
+
+  const timelineHtml = timelineEvents.map((evt, i) => {
+    const isLatest = i === 0;
+    const cls = evt.kind === "rejected" || evt.kind === "archived" ? "danger"
+      : evt.kind === "submitted" ? "success"
+      : isLatest ? "active" : "";
+    return `<div class="timeline-item ${cls}">
+      <span class="timeline-dot"></span>
+      <div class="timeline-body">
+        <strong>${escapeHtml(evt.kind === "submitted" ? "Application Submitted" : evt.label)}</strong>
+        <small>${formatDate(evt.at)}</small>
+      </div>
+    </div>`;
+  }).join("");
+
+  const resumeCard = cand && cand.hasProfile
+    ? `<div class="document-card">
+        <div class="doc-icon">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+        </div>
+        <div class="doc-meta">
+          <strong>Resume_${new Date(app.createdAt).getFullYear()}.pdf</strong>
+          <small>Parsed from your profile</small>
+        </div>
+      </div>`
+    : '<p class="hint" style="margin:0;">No documents on file.</p>';
+
+  const interviewBlock = interview
+    ? `<div class="document-card" style="margin-top:0.7rem;">
+        <div class="doc-icon">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        </div>
+        <div class="doc-meta">
+          <strong>Interview · ${escapeHtml(formatDateTime(new Date(interview.dateTime).getTime()))}</strong>
+          <small>${interview.meetingType === "google_meet" ? `<a href="${escapeHtml(interview.meetingLink || "")}" target="_blank" rel="noopener">Join Google Meet</a>` : escapeHtml(interview.meetingLink || "")}</small>
+        </div>
+      </div>`
+    : "";
+
+  container.innerHTML = `
+    <div class="app-detail-top">
+      <div class="app-icon">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+      </div>
+      <div>
+        <h1>${escapeHtml(job.title)}</h1>
+        <div class="meta-row">
+          <span>🏢 ${escapeHtml(job.company)}</span>
+          <span>📍 ${escapeHtml(job.location)}</span>
+        </div>
+        <div class="meta-row" style="margin-top:0.4rem;">
+          <span>🕒 Applied ${escapeHtml(formatDate(app.createdAt))}</span>
+        </div>
+      </div>
+      <div class="app-detail-status-wrap">${badgeHtml(badge)}</div>
+    </div>
+
+    <div class="app-detail-layout">
+      <div class="app-detail-main">
+        <div class="app-detail-card">
+          <h3>Application Timeline</h3>
+          <div class="timeline">${timelineHtml}</div>
+        </div>
+        <div class="app-detail-card about-role">
+          <h3>About the Role</h3>
+          <p>${escapeHtml(job.description || `This is a ${escapeHtml(job.jobType || "full-time")} role based in ${escapeHtml(job.location)}. As a ${escapeHtml(job.title)} at ${escapeHtml(job.company)}, you will play a key part in the team's success.`)}</p>
+          <a href="#" class="original-link" data-action="view-job">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            View original job posting
+          </a>
+        </div>
+      </div>
+      <aside class="app-detail-card">
+        <h3>Your Submitted Application</h3>
+        <div class="submitted-section">
+          <h4>Contact Info</h4>
+          <div class="contact-row">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <span>${escapeHtml((cand && cand.email) || "—")}</span>
+          </div>
+          <div class="contact-row">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <span>${escapeHtml((cand && cand.contact) || "—")}</span>
+          </div>
+        </div>
+        <div class="submitted-section">
+          <h4>Resume &amp; Documents</h4>
+          ${resumeCard}
+          ${interviewBlock}
+        </div>
+      </aside>
+    </div>
+  `;
+
+  container.querySelectorAll("[data-action='view-job']").forEach((el) => el.addEventListener("click", (e) => {
+    e.preventDefault();
+    navigateTo("candidateFindJobsPage");
+    openJobDetail(job.id);
+  }));
+}
+
+/* ============================================================
+   COMPANIES: directory, detail, reviews
+   ============================================================ */
+let activeCompanyId = null;
+let activeCompanyTab = "reviews";
+let companiesSearchText = "";
+let reviewsSort = "newest";
+
+function aggregatedCompanies() {
+  // Include real employer companies (those that have job postings) + seeded ones
+  const map = new Map();
+  companies.forEach((co) => map.set(co.name.toLowerCase(), { ...co }));
+  jobs.forEach((j) => {
+    const key = (j.company || "").toLowerCase();
+    if (!key) return;
+    if (!map.has(key)) {
+      map.set(key, {
+        id: "live-" + key.replace(/\s+/g, "-"),
+        name: j.company,
+        color: pickColorFromName(j.company),
+        industry: j.jobType || "Hiring",
+        seededRating: 0,
+        seededReviewsCount: 0,
+        salariesCount: 0,
+        questionsCount: 0,
+        mockOpenJobs: 0,
+        description: "",
+        whyJoinUs: "",
+        detailedRatings: {},
+        saying: { positive: [], negative: [] },
+        synthetic: true
+      });
+    }
+  });
+  return Array.from(map.values()).map(enrichCompanyWithEmployerProfile);
+}
+
+function employerProfileForCompany(companyName) {
+  const target = (companyName || "").toLowerCase();
+  if (!target) return null;
+  const employer = users.find((u) =>
+    u.role === "Employer" && (u.company || "").trim().toLowerCase() === target
+  );
+  if (!employer) return null;
+  return {
+    contactEmail: employer.contactEmail || employer.email || "",
+    website: employer.companyWebsite || "",
+    industry: employer.companyIndustry || "",
+    size: employer.companySize || "",
+    location: employer.companyLocation || "",
+    description: employer.companyDescription || "",
+    isPremium: !!employer.membership
+  };
+}
+
+function enrichCompanyWithEmployerProfile(co) {
+  const profile = employerProfileForCompany(co.name);
+  if (!profile) return { ...co, employerProfile: null, hasEmployerProfile: false };
+  const hasEmployerProfile = !!(
+    profile.description || profile.website || profile.location ||
+    profile.industry || profile.size || profile.contactEmail
+  );
+  return {
+    ...co,
+    industry: profile.industry || co.industry,
+    description: profile.description || co.description,
+    employerProfile: profile,
+    hasEmployerProfile
+  };
+}
+
+function pickColorFromName(name) {
+  const palette = ["#2250f4", "#17a862", "#9333ea", "#0ea5b7", "#ec4899", "#f97316", "#facc15", "#0e1116"];
+  let h = 0;
+  for (let i = 0; i < (name || "").length; i++) h = (h * 31 + name.charCodeAt(i)) % palette.length;
+  return palette[h];
+}
+
+function companyInitial(name) {
+  return (name || "?").trim().charAt(0).toUpperCase();
+}
+
+function companyReviews(companyName) {
+  const target = (companyName || "").toLowerCase();
+  return reviews.filter((r) => (r.companyName || "").toLowerCase() === target);
+}
+
+function companyJobs(companyName) {
+  const target = (companyName || "").toLowerCase();
+  return jobs.filter((j) => (j.company || "").toLowerCase() === target);
+}
+
+function companyTotalRating(co) {
+  const own = companyReviews(co.name);
+  if (own.length === 0) return Number(co.seededRating || 0);
+  // Average of stored reviews; if seeded count > 0, weight them via seeded average
+  const realAvg = own.reduce((a, r) => a + r.rating, 0) / own.length;
+  if (co.seededRating && co.seededReviewsCount) {
+    const total = co.seededReviewsCount + own.length;
+    return (co.seededRating * co.seededReviewsCount + realAvg * own.length) / total;
+  }
+  return realAvg;
+}
+
+function companyTotalReviewCount(co) {
+  return companyReviews(co.name).length + Number(co.seededReviewsCount || 0);
+}
+
+function companyOpenJobsCount(co) {
+  return companyJobs(co.name).length + Number(co.mockOpenJobs || 0);
+}
+
+function starsHtml(rating, size) {
+  const filled = Math.round(rating);
+  const cls = size === "lg" ? "stars stars-lg" : "stars";
+  let out = "";
+  for (let i = 0; i < 5; i++) out += i < filled ? "★" : "☆";
+  return `<span class="${cls}">${out}</span>`;
+}
+
+function abbreviateNumber(n) {
+  n = Number(n) || 0;
+  if (n >= 1000) return (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + "k";
+  return String(n);
+}
+
+/* ---------- Companies directory ---------- */
+function renderCompaniesPage() {
+  const grid = $("companiesGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  const list = aggregatedCompanies();
+  const q = companiesSearchText.trim();
+  const filtered = !q ? list : list.filter((co) =>
+    fuzzyMatch(q, [co.name, co.industry || "", (companyJobs(co.name).map((j) => j.title).join(" "))].join(" "))
+  );
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty">No companies match your search.</div>';
+    return;
+  }
+  filtered.forEach((co) => grid.appendChild(buildCompanyCard(co)));
+}
+
+function buildCompanyCard(co) {
+  const rating = companyTotalRating(co);
+  const reviewsCount = companyTotalReviewCount(co);
+  const openJobs = companyOpenJobsCount(co);
+  const salaries = Number(co.salariesCount || 0);
+  const questions = Number(co.questionsCount || 0);
+
+  const card = document.createElement("article");
+  card.className = "company-card";
+  card.innerHTML = `
+    <div class="company-card-head">
+      <div class="company-logo" style="background:${escapeHtml(co.color || "#2250f4")}">${escapeHtml(companyInitial(co.name))}</div>
+      <div>
+        <h3>${escapeHtml(co.name)}</h3>
+        <div class="company-rating">
+          <strong>${rating ? rating.toFixed(1) : "—"}</strong>
+          ${rating ? starsHtml(rating) : ""}
+          ${reviewsCount ? `<span>(${abbreviateNumber(reviewsCount)} reviews)</span>` : '<span>No reviews yet</span>'}
+        </div>
+      </div>
+    </div>
+    <div class="company-stats">
+      <div class="stat"><strong>${abbreviateNumber(salaries)}</strong>Salaries</div>
+      <div class="stat"><strong>${abbreviateNumber(questions)}</strong>Questions</div>
+      <div class="stat"><strong>${abbreviateNumber(openJobs)}</strong>Open jobs</div>
+    </div>
+  `;
+  card.addEventListener("click", () => openCompanyDetail(co.name));
+  return card;
+}
+
+/* ---------- Company detail ---------- */
+function openCompanyDetail(companyName) {
+  const list = aggregatedCompanies();
+  const co = list.find((c) => c.name.toLowerCase() === (companyName || "").toLowerCase());
+  if (!co) return;
+  activeCompanyId = co.name;
+  activeCompanyTab = co.hasEmployerProfile ? "snapshot" : "reviews";
+  renderCompanyDetail();
+  navigateTo("companyDetailPage");
+}
+
+function renderCompanyDetail() {
+  if (!activeCompanyId) return;
+  const co = aggregatedCompanies().find((c) => c.name === activeCompanyId);
+  if (!co) return;
+
+  const rating = companyTotalRating(co);
+  const reviewsCount = companyTotalReviewCount(co);
+  const openJobs = companyOpenJobsCount(co);
+  const profile = co.employerProfile;
+  const metaParts = [];
+  if (rating) metaParts.push(`<span class="pill-blue">${rating.toFixed(1)} ★</span>`);
+  if (co.industry) metaParts.push(`<span>${escapeHtml(co.industry)}</span>`);
+  if (profile && profile.location) metaParts.push(`<span>${escapeHtml(profile.location)}</span>`);
+  if (profile && profile.size) metaParts.push(`<span>${escapeHtml(profile.size)}</span>`);
+  const featuredBadge = profile && profile.isPremium
+    ? '<span class="company-featured-badge">Featured Employer</span>'
+    : "";
+
+  $("companyDetailHeader").innerHTML = `
+    <div class="company-logo" style="background:${escapeHtml(co.color || "#2250f4")}">${escapeHtml(companyInitial(co.name))}</div>
+    <div>
+      <h1>${escapeHtml(co.name)} ${featuredBadge}</h1>
+      <div class="meta-row">${metaParts.join("")}</div>
+      ${profile && profile.website ? `<a class="company-website-link" href="${escapeHtml(profile.website)}" target="_blank" rel="noopener">${escapeHtml(profile.website.replace(/^https?:\/\//, ""))}</a>` : ""}
+    </div>
+    <div class="header-actions">
+      <button type="button" class="dark" id="companyFollowBtn">Follow</button>
+      <button type="button" class="secondary outline" id="companyWriteReviewBtn">Write a review</button>
+    </div>
+  `;
+  const followBtn = $("companyFollowBtn");
+  if (followBtn) followBtn.addEventListener("click", () => {
+    followBtn.textContent = followBtn.textContent === "Following" ? "Follow" : "Following";
+  });
+  const writeBtn = $("companyWriteReviewBtn");
+  if (writeBtn) writeBtn.addEventListener("click", () => {
+    activeCompanyTab = "reviews";
+    setCompanyTabActive();
+    renderCompanyTabContent(true);
+  });
+
+  // Tab counts
+  $("companyReviewsCount").textContent = String(reviewsCount);
+  $("companySalariesCount").textContent = abbreviateNumber(co.salariesCount || 0);
+  $("companyJobsCount").textContent = String(openJobs);
+  $("companyQuestionsCount").textContent = String(co.questionsCount || 0);
+
+  setCompanyTabActive();
+  renderCompanyTabContent(false);
+}
+
+function setCompanyTabActive() {
+  document.querySelectorAll("#companyTabs .company-tab").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.companyTab === activeCompanyTab);
+  });
+}
+
+function renderCompanyTabContent(focusWriteReview) {
+  const co = aggregatedCompanies().find((c) => c.name === activeCompanyId);
+  const wrap = $("companyTabContent");
+  if (!wrap || !co) return;
+
+  switch (activeCompanyTab) {
+    case "reviews": wrap.innerHTML = companyReviewsTabHtml(co); wireReviewsTab(co, focusWriteReview); break;
+    case "jobs": wrap.innerHTML = companyJobsTabHtml(co); wireJobsTab(co); break;
+    case "snapshot": wrap.innerHTML = companySnapshotTabHtml(co); break;
+    case "why": wrap.innerHTML = companyWhyTabHtml(co); break;
+    case "salaries": wrap.innerHTML = placeholderTabHtml("Salary insights", "Detailed compensation data for this company will appear here as more reports are submitted."); break;
+    case "questions": wrap.innerHTML = placeholderTabHtml("Questions", "Common interview questions and community Q&A coming soon."); break;
+    case "interviews": wrap.innerHTML = placeholderTabHtml("Interview experiences", "Real interview stories from candidates will appear here."); break;
+    default: wrap.innerHTML = "";
+  }
+}
+
+function placeholderTabHtml(title, body) {
+  return `<div class="app-detail-card"><h3>${escapeHtml(title)}</h3><p style="margin:0; color:var(--muted);">${escapeHtml(body)}</p></div>`;
+}
+
+function companySnapshotTabHtml(co) {
+  const profile = co.employerProfile;
+  if (profile && co.hasEmployerProfile) {
+    const rows = [
+      profile.industry ? { label: "Industry", value: profile.industry } : null,
+      profile.size ? { label: "Company size", value: profile.size } : null,
+      profile.location ? { label: "Headquarters", value: profile.location } : null,
+      profile.contactEmail ? { label: "Contact email", value: profile.contactEmail, mail: true } : null,
+      profile.website ? { label: "Website", value: profile.website, link: true } : null
+    ].filter(Boolean);
+
+    return `<div class="company-profile-view">
+      <div class="app-detail-card company-profile-card">
+        <h3>Company Profile</h3>
+        ${profile.description
+          ? `<p class="company-profile-description">${escapeHtml(profile.description)}</p>`
+          : '<p class="company-profile-description muted">This employer has not added a company description yet.</p>'}
+        ${rows.length ? `<div class="company-profile-grid">
+          ${rows.map((row) => `
+            <div class="company-profile-field">
+              <span class="company-profile-label">${escapeHtml(row.label)}</span>
+              ${row.link
+                ? `<a href="${escapeHtml(row.value)}" target="_blank" rel="noopener">${escapeHtml(row.value.replace(/^https?:\/\//, ""))}</a>`
+                : row.mail
+                  ? `<a href="mailto:${escapeHtml(row.value)}">${escapeHtml(row.value)}</a>`
+                  : `<span>${escapeHtml(row.value)}</span>`}
+            </div>`).join("")}
+        </div>` : ""}
+      </div>
+      ${co.description && profile.description !== co.description ? `<div class="app-detail-card">
+        <h3>About ${escapeHtml(co.name)}</h3>
+        <p style="margin:0; color:var(--text-soft); line-height:1.55;">${escapeHtml(co.description)}</p>
+      </div>` : ""}
+    </div>`;
+  }
+  return `<div class="app-detail-card">
+    <h3>About ${escapeHtml(co.name)}</h3>
+    <p style="margin:0; color:var(--text-soft); line-height:1.55;">${escapeHtml(co.description || "No description provided yet.")}</p>
+  </div>`;
+}
+
+function companyWhyTabHtml(co) {
+  const profile = co.employerProfile;
+  const pitch = profile && profile.description ? profile.description : (co.whyJoinUs || "");
+  return `<div class="app-detail-card">
+    <h3>Why join ${escapeHtml(co.name)}?</h3>
+    <p style="margin:0; color:var(--text-soft); line-height:1.55;">${escapeHtml(pitch || "This company hasn't shared their pitch yet.")}</p>
+  </div>`;
+}
+
+function ratingBarsHtml(co) {
+  const total = companyTotalReviewCount(co) || 1;
+  const counts = [5, 4, 3, 2, 1].map((star) => {
+    const real = reviews.filter((r) => (r.companyName || "").toLowerCase() === co.name.toLowerCase() && r.rating === star).length;
+    // Add a small seeded distribution if seededReviewsCount exists
+    const seeded = co.seededReviewsCount ? Math.round(co.seededReviewsCount * (star === Math.round(co.seededRating || 0) ? 0.55 : star >= 4 ? 0.15 : 0.07)) : 0;
+    return real + seeded;
+  });
+  const max = Math.max(1, ...counts);
+  return [5, 4, 3, 2, 1].map((s, i) => {
+    const pct = Math.round((counts[i] / max) * 100);
+    return `<div class="rating-bar"><span>${s}</span><div class="bar"><span style="width:${pct}%"></span></div></div>`;
+  }).join("");
+}
+
+function detailedRatingsHtml(co) {
+  const rows = Object.entries(co.detailedRatings || {});
+  if (!rows.length) return "";
+  return `<div class="app-detail-card"><h3>Detailed ratings</h3>
+    <div class="detailed-ratings">
+      ${rows.map(([label, val]) => `<div class="detailed-rating-row">
+        <span class="label">${escapeHtml(label)}</span>
+        <span class="val">${escapeHtml(val)} <span class="stars">★</span></span>
+      </div>`).join("")}
+    </div>
+  </div>`;
+}
+
+function peopleSayingHtml(co) {
+  const pos = (co.saying && co.saying.positive) || [];
+  const neg = (co.saying && co.saying.negative) || [];
+  if (!pos.length && !neg.length) return "";
+  return `<div class="app-detail-card"><h3>What people are saying</h3>
+    <div class="people-saying">
+      ${pos.map((s) => `<div class="item pos">✓ ${escapeHtml(s)}</div>`).join("")}
+      ${neg.map((s) => `<div class="item neg">✗ ${escapeHtml(s)}</div>`).join("")}
+    </div>
+  </div>`;
+}
+
+function companyReviewsTabHtml(co) {
+  const totalReviews = companyTotalReviewCount(co);
+  const realReviews = companyReviews(co.name);
+  const sorted = sortedReviews(realReviews);
+  const rating = companyTotalRating(co);
+
+  const sidebar = `
+    <div class="app-detail-card rating-card">
+      <h3>Overall rating</h3>
+      <div class="big-rating">
+        <strong>${rating ? rating.toFixed(1) : "—"}</strong>
+        ${rating ? starsHtml(rating, "lg") : ""}
+      </div>
+      <div class="sub">Based on ${abbreviateNumber(totalReviews)} reviews</div>
+      <div class="rating-bars">${ratingBarsHtml(co)}</div>
+    </div>
+    ${detailedRatingsHtml(co)}
+    ${peopleSayingHtml(co)}
+  `;
+
+  const writeForm = `
+    <div class="write-review-card" id="writeReviewCard" ${currentUser && currentUser.role === "Candidate" ? "" : "style=\"display:none;\""}>
+      <h4>Write a review</h4>
+      <form id="reviewForm">
+        <div class="form-row">
+          <label style="font-size:0.82rem; color:var(--muted); display:block; margin-bottom:0.3rem;">Your rating</label>
+          <div class="star-picker" id="reviewStarPicker" data-rating="0">
+            ${[1,2,3,4,5].map((n) => `<button type="button" data-star="${n}">★</button>`).join("")}
+          </div>
+        </div>
+        <div class="form-row"><input type="text" id="reviewTitle" placeholder="Review title (e.g. Great culture)" required></div>
+        <div class="grid-2 form-row">
+          <input type="text" id="reviewPosition" placeholder="Your position (e.g. Engineer)">
+          <input type="text" id="reviewLocation" placeholder="Location (e.g. Sydney NSW)">
+        </div>
+        <div class="form-row"><textarea id="reviewBody" placeholder="Share details about your experience..." required></textarea></div>
+        <div class="form-actions">
+          <button type="button" class="ghost" id="reviewCancel">Cancel</button>
+          <button type="submit" class="primary-blue">Submit review</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  const reviewsHead = `
+    <div class="search-filters-row">
+      <input type="text" placeholder="Job title, department">
+      <input type="text" placeholder="Australia" value="Australia">
+      <button type="button" class="primary-blue">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </button>
+    </div>
+    <div class="chip-tools">
+      <button type="button" class="chip-tool">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        Keywords
+      </button>
+      <button type="button" class="chip-tool">Topics ▾</button>
+    </div>
+    <div class="reviews-head">
+      <h3>${abbreviateNumber(totalReviews)} reviews</h3>
+      <div class="reviews-sort">
+        <span>Sort</span>
+        <select id="reviewsSortSelect">
+          <option value="newest" ${reviewsSort === "newest" ? "selected" : ""}>Newest</option>
+          <option value="oldest" ${reviewsSort === "oldest" ? "selected" : ""}>Oldest</option>
+          <option value="highest" ${reviewsSort === "highest" ? "selected" : ""}>Highest rated</option>
+          <option value="lowest" ${reviewsSort === "lowest" ? "selected" : ""}>Lowest rated</option>
+          <option value="popular" ${reviewsSort === "popular" ? "selected" : ""}>Most liked</option>
+        </select>
+      </div>
+    </div>
+  `;
+
+  const reviewsList = sorted.length
+    ? sorted.map(reviewCardHtml).join("")
+    : '<div class="empty">No reviews yet — be the first to share your experience!</div>';
+
+  return `<div class="company-detail-layout">
+    <div>${sidebar}</div>
+    <div>
+      ${writeForm}
+      ${reviewsHead}
+      ${reviewsList}
+    </div>
+  </div>`;
+}
+
+function sortedReviews(list) {
+  const arr = list.slice();
+  switch (reviewsSort) {
+    case "oldest": arr.sort((a, b) => a.createdAt - b.createdAt); break;
+    case "highest": arr.sort((a, b) => b.rating - a.rating || b.createdAt - a.createdAt); break;
+    case "lowest": arr.sort((a, b) => a.rating - b.rating || b.createdAt - a.createdAt); break;
+    case "popular": arr.sort((a, b) => (b.likes || 0) - (a.likes || 0)); break;
+    default: arr.sort((a, b) => b.createdAt - a.createdAt);
+  }
+  return arr;
+}
+
+function reviewCardHtml(r) {
+  const dt = new Date(r.createdAt).toLocaleDateString(undefined, { day: "2-digit", month: "long", year: "numeric" });
+  return `<div class="review-card" data-review-id="${escapeHtml(r.id)}">
+    <div class="review-head">
+      ${starsHtml(r.rating)}
+      <span>· ${escapeHtml(dt)}</span>
+    </div>
+    <h4>${escapeHtml(r.title)}</h4>
+    <div class="review-meta">
+      ${r.position ? `<span>${escapeHtml(r.position)}</span>` : ""}
+      ${r.location ? `<span>📍 ${escapeHtml(r.location)}</span>` : ""}
+    </div>
+    <p class="review-body">${escapeHtml(r.body)}</p>
+    <div class="review-actions">
+      <button type="button" class="vote-btn" data-vote="up">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-6 0v4H5l3 7h8l3-7h-5z"></path></svg>
+        ${r.likes || 0}
+      </button>
+      <button type="button" class="vote-btn" data-vote="down">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 6 0v-4h3l-3-7H8l-3 7h5z"></path></svg>
+        ${r.dislikes || 0}
+      </button>
+      <button type="button" class="vote-btn" style="margin-left:auto;">···</button>
+    </div>
+  </div>`;
+}
+
+function wireReviewsTab(co, focusWriteReview) {
+  const sortSel = $("reviewsSortSelect");
+  if (sortSel) sortSel.addEventListener("change", (e) => {
+    reviewsSort = e.target.value;
+    renderCompanyTabContent(false);
+  });
+
+  // Star picker
+  const picker = $("reviewStarPicker");
+  if (picker) {
+    picker.querySelectorAll("button[data-star]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const n = Number(btn.dataset.star);
+        picker.dataset.rating = String(n);
+        picker.querySelectorAll("button").forEach((b) => b.classList.toggle("on", Number(b.dataset.star) <= n));
+      });
+    });
+  }
+
+  // Review form
+  const form = $("reviewForm");
+  if (form) form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!currentUser || currentUser.role !== "Candidate") {
+      alert("Please log in as a candidate to write a review.");
+      return;
+    }
+    const rating = Number(picker.dataset.rating || 0);
+    if (!rating) { alert("Please pick a star rating."); return; }
+    const r = {
+      id: createId("rev"),
+      companyName: co.name,
+      authorName: currentUser.name,
+      rating,
+      title: $("reviewTitle").value.trim(),
+      position: $("reviewPosition").value.trim(),
+      location: $("reviewLocation").value.trim(),
+      body: $("reviewBody").value.trim(),
+      likes: 0,
+      dislikes: 0,
+      createdAt: Date.now()
+    };
+    reviews.push(r);
+    saveArray(STORAGE.reviews, reviews);
+    renderCompanyDetail();
+  });
+  const cancel = $("reviewCancel");
+  if (cancel) cancel.addEventListener("click", () => {
+    $("reviewForm").reset();
+    if (picker) {
+      picker.dataset.rating = "0";
+      picker.querySelectorAll("button").forEach((b) => b.classList.remove("on"));
+    }
+  });
+
+  // Vote handlers
+  document.querySelectorAll(".review-card").forEach((card) => {
+    const id = card.dataset.reviewId;
+    card.querySelectorAll("button[data-vote]").forEach((btn) => btn.addEventListener("click", () => {
+      const review = reviews.find((x) => x.id === id);
+      if (!review) return;
+      if (btn.dataset.vote === "up") review.likes = (review.likes || 0) + 1;
+      else review.dislikes = (review.dislikes || 0) + 1;
+      saveArray(STORAGE.reviews, reviews);
+      renderCompanyTabContent(false);
+    }));
+  });
+
+  if (focusWriteReview) {
+    const wr = $("writeReviewCard");
+    if (wr) wr.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function companyJobsTabHtml(co) {
+  const list = companyJobs(co.name);
+  if (!list.length) {
+    return `<div class="app-detail-card"><h3>Jobs at ${escapeHtml(co.name)}</h3>
+      <p style="margin:0; color:var(--muted);">No open jobs from this company on Matchify yet.</p></div>`;
+  }
+  const cards = list.map((j) => `<article class="company-job-card" data-job-id="${escapeHtml(j.id)}">
+    <h5>${escapeHtml(j.title)}</h5>
+    <div class="meta">
+      <span>📍 ${escapeHtml(j.location || "—")}</span>
+      <span>${escapeHtml(j.workMode || "")}</span>
+    </div>
+    <span class="salary-chip">${escapeHtml(formatSalary(j))}</span>
+  </article>`).join("");
+  return `<div class="app-detail-card">
+    <h3>Jobs at ${escapeHtml(co.name)}</h3>
+    <div class="company-jobs-strip">${cards}</div>
+  </div>`;
+}
+
+function wireJobsTab(co) {
+  document.querySelectorAll(".company-job-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const id = card.dataset.jobId;
+      navigateTo("candidateFindJobsPage");
+      openJobDetail(id);
+    });
+  });
 }
 
 /* ---------- My Jobs ---------- */
+function candidateStatusBadge(app) {
+  if (app.candidateArchived) {
+    return { cls: "not-selected", label: "Not Selected", icon: "x" };
+  }
+  if (app.status !== "applied") return null;
+  const empStatus = app.employerStatus || "applied";
+  if (empStatus === "rejected") return { cls: "not-selected", label: "Not Selected", icon: "x" };
+  if (empStatus === "interview_scheduled") return { cls: "interview", label: "Interview Scheduled", icon: "check" };
+  if (empStatus === "shortlisted") return { cls: "shortlisted", label: "Shortlisted", icon: "check" };
+  if (app.viewedByEmployer) return { cls: "viewed", label: "Viewed by Employer", icon: "check" };
+  return { cls: "applied-success", label: "Applied successfully", icon: "check" };
+}
+
+function badgeHtml(badge) {
+  if (!badge) return "";
+  const icon = badge.icon === "x"
+    ? '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>'
+    : '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+  return `<span class="app-status-pill ${badge.cls}">${icon}${escapeHtml(badge.label)}</span>`;
+}
+
+function latestEventLine(app) {
+  if (!Array.isArray(app.events) || !app.events.length) return null;
+  return app.events[app.events.length - 1];
+}
+
 function renderMyJobs() {
   if (!currentUser) return;
   const myApps = applications.filter((a) => a.candidateUserId === currentUser.id);
   const myInterviews = interviews.filter((iv) => iv.candidateUserId === currentUser.id);
-  const savedCount = myApps.filter((a) => a.status === "saved").length;
-  const appliedCount = myApps.filter((a) => a.status === "applied").length;
+  const savedCount = myApps.filter((a) => a.status === "saved" && !a.candidateArchived).length;
+  const appliedCount = myApps.filter((a) => a.status === "applied" && !a.candidateArchived).length;
+  const archivedCount = myApps.filter((a) => a.candidateArchived).length;
   $("savedCount").textContent = String(savedCount);
   $("appliedCount").textContent = String(appliedCount);
+  const archivedCountEl = $("archivedCount");
+  if (archivedCountEl) archivedCountEl.textContent = String(archivedCount);
   const interviewsCountEl = $("interviewsCount");
   if (interviewsCountEl) interviewsCountEl.textContent = String(myInterviews.length);
 
@@ -1076,7 +2823,12 @@ function renderMyJobs() {
     return;
   }
 
-  const filtered = myApps.filter((a) => a.status === myJobsTab);
+  let filtered;
+  if (myJobsTab === "archived") {
+    filtered = myApps.filter((a) => a.candidateArchived);
+  } else {
+    filtered = myApps.filter((a) => a.status === myJobsTab && !a.candidateArchived);
+  }
   if (!filtered.length) {
     wrap.innerHTML = `<div class="empty">No ${myJobsTab} jobs yet. Browse the Find Jobs page.</div>`;
     return;
@@ -1086,12 +2838,15 @@ function renderMyJobs() {
     .forEach((app) => {
       const job = jobs.find((j) => j.id === app.jobId);
       if (!job) return;
-      const status = app.employerStatus || (app.status === "applied" ? "applied" : null);
       const employer = getEmployerInfo(job.userId);
       const ivForApp = interviews.find((iv) => iv.candidateUserId === currentUser.id && iv.jobId === app.jobId);
+      const badge = candidateStatusBadge(app);
+      const latest = latestEventLine(app);
+      const showActions = !app.candidateArchived;
+      const isApplied = app.status === "applied";
 
       const card = document.createElement("article");
-      card.className = "application-card";
+      card.className = "application-card application-card-clickable";
       card.innerHTML = `
         <div class="app-icon">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -1099,31 +2854,49 @@ function renderMyJobs() {
         <div class="app-body">
           <h4>${escapeHtml(job.title)}</h4>
           <div class="app-meta">
-            <span>${escapeHtml(job.company)}</span>
-            <span>${escapeHtml(job.location)}</span>
-            <span>${escapeHtml(job.workMode)}</span>
-            <span>${app.status === "applied" ? "Applied" : "Saved"} ${formatDate(app.createdAt)}</span>
+            <span>🏢 ${escapeHtml(job.company)}</span>
+            <span>📍 ${escapeHtml(job.location)}</span>
+            <span>🕒 ${app.status === "applied" ? "Applied" : "Saved"} ${formatDate(app.createdAt)}</span>
           </div>
-          ${ivForApp ? `<p class="my-jobs-interview-note">📅 Interview ${formatDateTime(new Date(ivForApp.dateTime).getTime())} · <a href="${escapeHtml(ivForApp.meetingLink || "")}" target="_blank" rel="noopener">${escapeHtml(ivForApp.meetingType === "google_meet" ? "Join Google Meet" : ivForApp.meetingLink || "View")}</a></p>` : ""}
+          ${ivForApp && isApplied ? `<p class="my-jobs-interview-note">📅 Interview ${formatDateTime(new Date(ivForApp.dateTime).getTime())} · <a href="${escapeHtml(ivForApp.meetingLink || "")}" target="_blank" rel="noopener">${escapeHtml(ivForApp.meetingType === "google_meet" ? "Join Google Meet" : ivForApp.meetingLink || "View")}</a></p>` : ""}
+          ${latest && isApplied ? `<p class="my-jobs-event-note"><span class="event-dot"></span>${escapeHtml(latest.label)} <span class="event-date">${formatDate(latest.at)}</span></p>` : ""}
+        </div>
+        <div class="app-card-aside">
+          ${badgeHtml(badge)}
           <div class="app-row-actions">
-            <button type="button" class="secondary small" data-view="${job.id}">View Details</button>
-            ${employer ? '<button type="button" class="secondary small" data-message="' + employer.userId + '">✉ Message Employer</button>' : ""}
-            <button type="button" class="ghost small" data-remove="${app.id}">Remove</button>
+            ${isApplied ? `<button type="button" class="secondary small" data-action="detail">View Details</button>` : `<button type="button" class="secondary small" data-action="viewJob">View Details</button>`}
+            ${showActions && employer && isApplied ? '<button type="button" class="ghost small" data-action="message">✉ Message</button>' : ""}
+            ${showActions ? `<button type="button" class="ghost small" data-action="${isApplied ? "archive" : "remove"}">${isApplied ? "Archive" : "Remove"}</button>` : `<button type="button" class="ghost small" data-action="restore">Restore</button>`}
           </div>
         </div>
-        ${status && app.status === "applied" ? `<span class="app-status ${status}">${escapeHtml(APP_STATUS_LABELS[status] || status)}</span>` : ""}
       `;
-      card.querySelector("[data-view]").addEventListener("click", () => {
-        navigateTo("candidateFindJobsPage");
-        openJobDetail(job.id);
-      });
-      const msgBtn = card.querySelector("[data-message]");
-      if (msgBtn) msgBtn.addEventListener("click", () => openMessageThreadWith(msgBtn.dataset.message, job.id));
-      card.querySelector("[data-remove]").addEventListener("click", () => {
-        applications = applications.filter((a) => a.id !== app.id);
-        saveArray(STORAGE.applications, applications);
-        renderMyJobs();
-      });
+      card.querySelectorAll("button[data-action]").forEach((btn) => btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const action = btn.dataset.action;
+        if (action === "detail") openApplicationDetail(app.id);
+        if (action === "viewJob") { navigateTo("candidateFindJobsPage"); openJobDetail(job.id); }
+        if (action === "message" && employer) openMessageThreadWith(employer.userId, job.id);
+        if (action === "archive") {
+          app.candidateArchived = true;
+          pushAppEvent(app, "archived", "Application withdrawn.");
+          saveArray(STORAGE.applications, applications);
+          renderMyJobs();
+        }
+        if (action === "remove") {
+          applications = applications.filter((a) => a.id !== app.id);
+          saveArray(STORAGE.applications, applications);
+          renderMyJobs();
+        }
+        if (action === "restore") {
+          app.candidateArchived = false;
+          pushAppEvent(app, "restored", "Application restored.");
+          saveArray(STORAGE.applications, applications);
+          renderMyJobs();
+        }
+      }));
+      if (isApplied) {
+        card.addEventListener("click", () => openApplicationDetail(app.id));
+      }
       wrap.appendChild(card);
     });
 }
@@ -1268,6 +3041,11 @@ function openCandidateDetail(idOrUserId) {
   const cand = getCandidateInfo(userId);
   if (!cand) return;
 
+  // Track "Viewed by Employer" for applications targeting this employer's jobs
+  if (currentUser && currentUser.role === "Employer" && currentUser.id !== userId) {
+    markCandidateViewedByEmployer(userId, currentUser.id);
+  }
+
   const panel = $("candidateDetailPanel");
   const body = $("candidateDetailBody");
   if (!panel || !body) return;
@@ -1381,10 +3159,80 @@ function refreshRecommendationJobSelector() {
   renderRecommendedCandidates();
 }
 
+function candidateRecommendationLimit() {
+  if (!currentUser) return FREE_RECOMMENDATION_LIMIT;
+  if (currentUser.membership && candidateRecTier === "premium") return Infinity;
+  return FREE_RECOMMENDATION_LIMIT;
+}
+
+function setCandidateRecTier(tier) {
+  candidateRecTier = tier === "premium" ? "premium" : "basic";
+  document.querySelectorAll("#candidateRecTierTabs .rec-tier-tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.recTier === candidateRecTier);
+  });
+  renderRecommendedCandidates();
+}
+
+function renderRecommendedCandidatesPremiumCta(totalMatches) {
+  const cta = $("recommendedCandidatesPremiumCta");
+  if (!cta) return;
+  const isPremiumMember = !!(currentUser && currentUser.membership);
+  const showCta = !isPremiumMember && candidateRecTier === "premium" && totalMatches > 0;
+  if (!showCta) {
+    cta.classList.add("hidden");
+    cta.innerHTML = "";
+    return;
+  }
+  cta.classList.remove("hidden");
+  cta.innerHTML = `
+    <p>Unlock all candidate matches</p>
+    <button type="button" class="rec-premium-btn" id="candidateRecUpgradeBtn">Upgrade to Premium</button>
+  `;
+  const btn = $("candidateRecUpgradeBtn");
+  if (btn) btn.addEventListener("click", () => {
+    navigateTo("premiumPage");
+    renderPremiumPage();
+  });
+}
+
+function buildRecCandidateCard(cand, score) {
+  const card = document.createElement("div");
+  card.className = "rec-card";
+  const topSkills = (cand.skills || []).slice(0, 3)
+    .map((s) => `<span class="chip chip-blue">${escapeHtml(s)}</span>`)
+    .join("");
+  card.innerHTML = `
+    <div class="rec-card-head">
+      <div class="rec-card-user">
+        <div class="rec-card-avatar" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path></svg>
+        </div>
+        <div>
+          <h5>${escapeHtml(cand.name)}</h5>
+          <p class="rec-company">${escapeHtml(cand.major || "Candidate")}</p>
+        </div>
+      </div>
+      <span class="rec-match">Match: ${score}</span>
+    </div>
+    <div class="chip-row">${topSkills}</div>
+    <p class="rec-exp">${cand.experience || 0} yrs exp</p>
+  `;
+  card.title = "Click to view full profile";
+  card.addEventListener("click", () => openCandidateDetail(cand.userId));
+  return card;
+}
+
 function renderRecommendedCandidates() {
   const wrap = $("recommendedCandidatesList");
   if (!wrap) return;
   wrap.innerHTML = "";
+  const cta = $("recommendedCandidatesPremiumCta");
+  if (cta) cta.classList.add("hidden");
+
+  document.querySelectorAll("#candidateRecTierTabs .rec-tier-tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.recTier === candidateRecTier);
+  });
+
   if (!activeRecommendationJobId) {
     wrap.innerHTML = '<div class="empty">Post a job to receive candidate recommendations.</div>';
     return;
@@ -1395,40 +3243,34 @@ function renderRecommendedCandidates() {
   }
   const job = jobs.find((j) => j.id === activeRecommendationJobId);
   if (!job) return;
-  const scored = candidates
+
+  const allScored = candidates
     .map((cand) => ({ cand, score: scoreCandidateForJob(job, cand) }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, recommendationLimit());
+    .sort((a, b) => b.score - a.score);
+  const isPremiumMember = !!(currentUser && currentUser.membership);
+
+  if (!isPremiumMember && candidateRecTier === "premium") {
+    wrap.innerHTML = allScored.length
+      ? '<div class="empty rec-premium-tab-empty">Upgrade to Premium to unlock every matching candidate for this role.</div>'
+      : '<div class="empty">No matching candidates for this job yet.</div>';
+    renderRecommendedCandidatesPremiumCta(allScored.length);
+    return;
+  }
+
+  const limit = candidateRecommendationLimit();
+  const scored = allScored.slice(0, limit);
+
+  if (!scored.length) {
+    wrap.innerHTML = '<div class="empty">No matching candidates for this job yet.</div>';
+    renderRecommendedCandidatesPremiumCta(allScored.length);
+    return;
+  }
 
   scored.forEach(({ cand, score }) => {
-    const card = document.createElement("div");
-    card.className = "rec-card";
-    const initials = (cand.name || "C").split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
-    const topSkills = (cand.skills || []).slice(0, 3)
-      .map((s) => `<span class="chip">${escapeHtml(s)}</span>`)
-      .join("");
-    card.innerHTML = `
-      <h5>${escapeHtml(initials)} &middot; ${escapeHtml(cand.name)}</h5>
-      <p class="rec-company">${escapeHtml(cand.major || "")} &middot; ${cand.experience || 0}y exp</p>
-      <div class="chip-row">${topSkills}</div>
-      <div class="rec-foot">
-        <span>${escapeHtml(cand.preferredLocation || "Any")}</span>
-        <span class="rec-match">Match: ${score}</span>
-      </div>
-    `;
-    card.title = "Click to view full profile";
-    card.addEventListener("click", () => openCandidateDetail(cand.userId));
-    wrap.appendChild(card);
+    wrap.appendChild(buildRecCandidateCard(cand, score));
   });
 
-  if (!currentUser.membership && candidates.length > FREE_RECOMMENDATION_LIMIT) {
-    const upsell = document.createElement("div");
-    upsell.className = "empty";
-    upsell.style.cursor = "pointer";
-    upsell.textContent = "Upgrade to Premium for unlimited candidate recommendations →";
-    upsell.addEventListener("click", toggleMembership);
-    wrap.appendChild(upsell);
-  }
+  renderRecommendedCandidatesPremiumCta(allScored.length);
 }
 
 /* ============================================================
@@ -1553,15 +3395,84 @@ function openMessageThreadWith(otherUserId, jobId) {
   renderMessagesPage();
 }
 
+function isUserOnline(userId) {
+  if (!messagesOnlineStatus || !userId) return false;
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) hash = ((hash << 5) - hash) + userId.charCodeAt(i);
+  return Math.abs(hash) % 3 !== 0;
+}
+
+function formatThreadListTime(ts) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const startOfMsgDay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const dayDiff = Math.round((startOfToday - startOfMsgDay) / 86400000);
+  if (dayDiff === 0) {
+    return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  }
+  if (dayDiff === 1) return "Yesterday";
+  if (dayDiff < 7) {
+    return d.toLocaleDateString(undefined, { weekday: "short" });
+  }
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+function formatMessageBubbleTime(ts) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const startOfMsgDay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const dayDiff = Math.round((startOfToday - startOfMsgDay) / 86400000);
+  const time = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  if (dayDiff === 0) return time;
+  if (dayDiff === 1) return `Yesterday ${time}`;
+  if (dayDiff < 7) {
+    const weekday = d.toLocaleDateString(undefined, { weekday: "long" });
+    return `${weekday} ${time}`;
+  }
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+function renderMessagesWelcomeHint() {
+  const hint = $("messagesWelcomeHint");
+  if (!hint || !currentUser) return;
+  hint.textContent = currentUser.role === "Employer"
+    ? "Select a conversation from the sidebar to view and respond to candidate messages. Keep your status online to reply faster!"
+    : "Select a conversation from the sidebar to view and respond to employer messages. Keep your status online to reply faster!";
+}
+
 function renderMessagesPage() {
   if (!currentUser) return;
-  const threads = getThreadsForUser(currentUser.id);
+  renderMessagesWelcomeHint();
+  const onlineToggle = $("messagesOnlineToggle");
+  if (onlineToggle) onlineToggle.checked = messagesOnlineStatus;
+
+  const allThreads = getThreadsForUser(currentUser.id);
+
+  const searchInput = $("threadSearchInput");
+  const q = (searchInput && searchInput.value.trim()) || "";
+
+  let threads = allThreads;
+  if (threadFilter === "unread") {
+    threads = threads.filter((t) => t.unread > 0);
+  }
+  if (q) {
+    threads = threads.filter((t) => {
+      const other = otherPartyId(t);
+      const info = displayInfoForUser(other);
+      const job = t.jobId ? jobs.find((j) => j.id === t.jobId) : null;
+      return fuzzyMatch(q, [info.name, info.subtitle || "", job ? job.title : "", t.lastMsg.body].join(" "));
+    });
+  }
 
   const wrap = $("messageThreadList");
   wrap.innerHTML = "";
 
   if (!threads.length) {
-    wrap.innerHTML = '<div class="empty">No conversations yet. Reach out from a job listing or application to start one.</div>';
+    wrap.innerHTML = '<div class="empty">' + (allThreads.length ? "No conversations match your search." : "No conversations yet. Reach out from a job listing or application to start one.") + '</div>';
     renderMessageChat(null);
     $("messagesEmpty").classList.remove("hidden");
     show($("messagesChat"), false);
@@ -1577,17 +3488,21 @@ function renderMessagesPage() {
     const info = displayInfoForUser(other);
     const initials = (info.name || "?").split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
     const job = t.jobId ? jobs.find((j) => j.id === t.jobId) : null;
-    const subjectLine = job ? `${job.title}` : "General";
+    const subjectLine = job ? job.title : (info.role === "Candidate" ? (info.subtitle || "Candidate") : "General");
+    const showOnline = isUserOnline(other);
 
     const el = document.createElement("button");
     el.type = "button";
     el.className = "thread-item" + (t.key === activeThreadKey ? " active" : "");
     el.innerHTML = `
-      <div class="thread-avatar">${escapeHtml(initials)}</div>
+      <div class="thread-avatar-wrap">
+        <div class="thread-avatar">${escapeHtml(initials)}</div>
+        ${showOnline ? '<span class="thread-online-dot" aria-label="Online"></span>' : ""}
+      </div>
       <div class="thread-body">
         <div class="thread-row">
           <strong>${escapeHtml(info.name)}</strong>
-          <span class="thread-time">${formatRelativeTime(t.lastMsg.createdAt)}</span>
+          <span class="thread-time">${formatThreadListTime(t.lastMsg.createdAt)}</span>
         </div>
         <p class="thread-subject">${escapeHtml(subjectLine)}</p>
         <p class="thread-preview">${escapeHtml(t.lastMsg.body)}</p>
@@ -1622,14 +3537,34 @@ function renderMessageChat(thread) {
   const info = displayInfoForUser(other);
   const job = thread.jobId ? jobs.find((j) => j.id === thread.jobId) : null;
   const initials = (info.name || "?").split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
+  const headerSubtitle = job
+    ? job.title
+    : (info.role === "Candidate" ? (info.subtitle || "Candidate") : (info.subtitle || "Recruiter"));
 
   $("chatHeader").innerHTML = `
-    <div class="thread-avatar large">${escapeHtml(initials)}</div>
+    <div class="thread-avatar-wrap">
+      <div class="thread-avatar large">${escapeHtml(initials)}</div>
+      ${isUserOnline(other) ? '<span class="thread-online-dot" aria-label="Online"></span>' : ""}
+    </div>
     <div class="chat-header-body">
-      <h3>${escapeHtml(info.name)}</h3>
-      <p>${escapeHtml(info.subtitle || "")}${job ? ` · ${escapeHtml(job.title)} @ ${escapeHtml(job.company)}` : ""}</p>
+      <div class="chat-header-name">
+        <span>${escapeHtml(info.name)}</span>
+        <span class="verified-badge" title="Verified">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </span>
+      </div>
+      <p>${escapeHtml(headerSubtitle)}</p>
     </div>
     <div class="chat-header-actions">
+      <button type="button" class="chat-header-icon" aria-label="Audio call" title="Audio call">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+      </button>
+      <button type="button" class="chat-header-icon" aria-label="Video call" title="Video call">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+      </button>
+      <button type="button" class="chat-header-icon" aria-label="More options" title="More options">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+      </button>
       ${info.role === "Candidate" && currentUser.role === "Employer" ? '<button type="button" class="secondary" id="chatViewCandidate">View Profile</button>' : ""}
       ${job && currentUser.role === "Candidate" ? `<button type="button" class="secondary" id="chatViewJob">View Job</button>` : ""}
     </div>
@@ -1649,16 +3584,34 @@ function renderMessageChat(thread) {
   body.innerHTML = "";
   thread.messages.forEach((m) => {
     const own = m.fromUserId === currentUser.id;
-    const bubble = document.createElement("div");
-    bubble.className = `chat-msg${own ? " own" : ""}${m.system ? " system" : ""}`;
-    bubble.innerHTML = `
-      ${m.system ? '<span class="msg-system-label">System</span>' : ""}
-      <p class="msg-body">${escapeHtml(m.body).replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')}</p>
-      <span class="msg-time">${formatDateTime(m.createdAt)}</span>
+    if (m.system) {
+      const bubble = document.createElement("div");
+      bubble.className = "chat-msg system";
+      bubble.innerHTML = `
+        <span class="msg-system-label">System</span>
+        <p class="msg-body">${escapeHtml(m.body).replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')}</p>
+      `;
+      body.appendChild(bubble);
+      return;
+    }
+    const group = document.createElement("div");
+    group.className = `chat-msg-group${own ? " own" : ""}`;
+    group.innerHTML = `
+      <div class="chat-msg">
+        <p class="msg-body">${escapeHtml(m.body).replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')}</p>
+      </div>
+      <span class="msg-time">${formatMessageBubbleTime(m.createdAt)}</span>
     `;
-    body.appendChild(bubble);
+    body.appendChild(group);
   });
   body.scrollTop = body.scrollHeight;
+
+  const chatInput = $("chatInput");
+  if (chatInput) {
+    chatInput.placeholder = `Reply to ${info.name}...`;
+    chatInput.value = "";
+    chatInput.style.height = "auto";
+  }
 }
 
 function formatDateTime(ts) {
@@ -1684,13 +3637,29 @@ function handleSendMessage(event) {
   event.preventDefault();
   if (!currentUser || !activeThreadKey) return;
   const input = $("chatInput");
-  const text = input.value;
+  const text = input ? input.value : "";
   if (!text.trim()) return;
   const decoded = decodeThreadKey(activeThreadKey);
   const toUserId = decoded.userIdA === currentUser.id ? decoded.userIdB : decoded.userIdA;
   sendMessage({ fromUserId: currentUser.id, toUserId, jobId: decoded.jobId, body: text });
-  input.value = "";
+  if (input) {
+    input.value = "";
+    input.style.height = "auto";
+  }
   renderMessagesPage();
+}
+
+function handleChatInputKeydown(event) {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    handleSendMessage(event);
+  }
+}
+
+function autoResizeChatInput(el) {
+  if (!el) return;
+  el.style.height = "auto";
+  el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
 }
 
 function refreshMessageBadges() {
@@ -1863,7 +3832,18 @@ function buildApplicationRow(app) {
 function updateApplicationStatus(appId, newStatus) {
   const app = applications.find((a) => a.id === appId);
   if (!app) return;
+  const prev = app.employerStatus;
   app.employerStatus = newStatus;
+  if (newStatus !== prev) {
+    const labelMap = {
+      applied: "Application restored.",
+      shortlisted: "Application shortlisted.",
+      interview_scheduled: "Interview scheduled.",
+      rejected: "Application not selected."
+    };
+    const label = labelMap[newStatus] || `Status updated to ${newStatus}.`;
+    pushAppEvent(app, newStatus, label);
+  }
   saveArray(STORAGE.applications, applications);
   renderApplicationsPage();
 }
@@ -2012,7 +3992,10 @@ function handleInterviewSubmit(event) {
     applicationToUpdate = applications.find((a) => a.candidateUserId === candidateUserId && a.jobId === jobId && a.status === "applied");
   }
   if (applicationToUpdate) {
-    applicationToUpdate.employerStatus = "interview_scheduled";
+    if (applicationToUpdate.employerStatus !== "interview_scheduled") {
+      applicationToUpdate.employerStatus = "interview_scheduled";
+      pushAppEvent(applicationToUpdate, "interview_scheduled", `Interview scheduled for ${dateStr}.`);
+    }
   } else {
     applications.push({
       id: createId("app"),
@@ -2020,6 +4003,12 @@ function handleInterviewSubmit(event) {
       jobId,
       status: "applied",
       employerStatus: "interview_scheduled",
+      viewedByEmployer: true,
+      candidateArchived: false,
+      events: [
+        { kind: "submitted", label: "Application successfully submitted.", at: Date.now() },
+        { kind: "interview_scheduled", label: `Interview scheduled for ${dateStr}.`, at: Date.now() }
+      ],
       createdAt: Date.now()
     });
   }
@@ -2499,43 +4488,69 @@ function bindEvents() {
     );
   });
 
-  /* Nav links */
-  document.querySelectorAll(".nav-link").forEach((btn) => {
+  /* Nav links (candidate top nav + employer top nav + sidebar) */
+  document.querySelectorAll(".nav-link[data-page], .sidebar-link").forEach((btn) => {
     btn.addEventListener("click", () => {
       const page = btn.dataset.page;
-      if (page === "candidateProfilePage") loadCandidateForm();
-      if (page === "candidateMyJobsPage") renderMyJobs();
-      if (page === "candidateFindJobsPage") renderFindJobs();
-      if (page === "employerDashboardPage") renderMyJobPostings();
-      if (page === "employerPostJobPage" && !editingJobId) loadJobForm(null);
-      if (page === "employerCandidatesPage") {
-        renderCandidatesGrid();
-        refreshRecommendationJobSelector();
-      }
-      if (page === "employerApplicationsPage") renderApplicationsPage();
-      if (page === "employerInterviewsPage") renderInterviewsPage();
-      if (page === "employerSourcingPage") renderSourcingPage();
-      if (page === "employerToolsPage") renderIntegrations();
-      if (page === "messagesPage") renderMessagesPage();
+      runPageInit(page);
       navigateTo(page);
     });
   });
 
+  /* Employer sidebar: create new */
+  const sidebarCreate = $("sidebarCreateNew");
+  if (sidebarCreate) sidebarCreate.addEventListener("click", () => {
+    editingJobId = null;
+    loadJobForm(null);
+    runPageInit("employerPostJobPage");
+    navigateTo("employerPostJobPage");
+  });
+
+  /* Employer sidebar: collapse toggle */
+  const sidebarCollapse = $("sidebarCollapseBtn");
+  if (sidebarCollapse) sidebarCollapse.addEventListener("click", () => {
+    document.body.classList.toggle("sidebar-collapsed");
+  });
+
   /* Logout */
   $("logoutBtn").addEventListener("click", doLogout);
+  const employerLogout = $("employerLogoutBtn");
+  if (employerLogout) employerLogout.addEventListener("click", doLogout);
+  const profileLogout = $("profileLogoutBtn");
+  if (profileLogout) profileLogout.addEventListener("click", doLogout);
+  const employerCompanyLogout = $("employerCompanyLogoutBtn");
+  if (employerCompanyLogout) employerCompanyLogout.addEventListener("click", doLogout);
+  const employerCompanyForm = $("employerCompanyForm");
+  if (employerCompanyForm) employerCompanyForm.addEventListener("submit", saveEmployerCompanyForm);
 
   /* Membership toggles */
-  $("candidateMembershipBtn").addEventListener("click", toggleMembership);
-  $("employerMembershipBtn").addEventListener("click", toggleMembership);
+  const employerMembershipBtn = $("employerMembershipBtn");
+  if (employerMembershipBtn) employerMembershipBtn.addEventListener("click", () => {
+    navigateTo("premiumPage");
+    renderPremiumPage();
+  });
 
   /* Candidate form */
   $("candidateForm").addEventListener("submit", saveCandidateProfile);
   attachChipInput($("candidateSkillsInput"), $("candidateSkillsChips"), "candidate");
-  $("extractResumeBtn").addEventListener("click", handleResumeExtraction);
+  attachChipInput($("candidateLicensesInput"), $("candidateLicensesChips"), "licenses");
+  attachChipInput($("candidateCertificationsInput"), $("candidateCertificationsChips"), "certifications");
+  const extractBtn = $("extractResumeBtn");
+  if (extractBtn) extractBtn.addEventListener("click", handleResumeExtraction);
   $("candidateResume").addEventListener("change", () => {
     const file = $("candidateResume").files[0];
     const previewEl = $("resumePreviewName");
-    if (previewEl) previewEl.textContent = file ? `Selected: ${file.name}` : "";
+    if (previewEl) previewEl.textContent = file ? file.name : "";
+    if (extractBtn) {
+      const isImage = file && file.type && file.type.startsWith("image/");
+      extractBtn.classList.toggle("hidden", !isImage);
+    }
+  });
+  const certInput = $("candidateCertificate");
+  if (certInput) certInput.addEventListener("change", () => {
+    const file = certInput.files[0];
+    const previewEl = $("certificatePreviewName");
+    if (previewEl) previewEl.textContent = file ? file.name : "";
   });
   $("addWorkExperienceBtn").addEventListener("click", openWorkExpModal);
   $("workExpForm").addEventListener("submit", handleWorkExpSubmit);
@@ -2553,6 +4568,25 @@ function bindEvents() {
     loadJobForm(null);
     navigateTo("employerPostJobPage");
   });
+
+  /* Employer jobs page */
+  const jobsPostBtn = $("jobsPostBtn");
+  if (jobsPostBtn) jobsPostBtn.addEventListener("click", () => {
+    loadJobForm(null);
+    navigateTo("employerPostJobPage");
+  });
+  const jobDetailBack = $("jobDetailBackBtn");
+  if (jobDetailBack) jobDetailBack.addEventListener("click", closeEmployerJobDetail);
+  const jobsFilterTitleEl = $("jobsFilterTitle");
+  if (jobsFilterTitleEl) jobsFilterTitleEl.addEventListener("input", debounce((e) => {
+    jobsFilterTitle = e.target.value;
+    renderEmployerJobsPage();
+  }, 200));
+  const jobsFilterLocationEl = $("jobsFilterLocation");
+  if (jobsFilterLocationEl) jobsFilterLocationEl.addEventListener("input", debounce((e) => {
+    jobsFilterLocation = e.target.value;
+    renderEmployerJobsPage();
+  }, 200));
 
   /* Find Jobs */
   $("jobSearchBtn").addEventListener("click", renderFindJobs);
@@ -2584,6 +4618,137 @@ function bindEvents() {
     renderMyJobs();
   });
 
+  /* Apply confirmation page */
+  const applyFindMore = $("applyConfirmFindMore");
+  if (applyFindMore) applyFindMore.addEventListener("click", () => {
+    navigateTo("candidateFindJobsPage");
+    renderFindJobs();
+  });
+  const applyViewApps = $("applyConfirmViewApps");
+  if (applyViewApps) applyViewApps.addEventListener("click", () => {
+    myJobsTab = "applied";
+    $("myJobsTabs").querySelectorAll(".tab-pill").forEach((b) => b.classList.toggle("active", b.dataset.tab === "applied"));
+    renderMyJobs();
+    navigateTo("candidateMyJobsPage");
+  });
+
+  /* Application detail back nav */
+  const appDetailBack = $("appDetailBack");
+  if (appDetailBack) appDetailBack.addEventListener("click", () => {
+    myJobsTab = "applied";
+    $("myJobsTabs").querySelectorAll(".tab-pill").forEach((b) => b.classList.toggle("active", b.dataset.tab === "applied"));
+    renderMyJobs();
+    navigateTo("candidateMyJobsPage");
+  });
+
+  /* Analytics page */
+  const analyticsRangeSelect = $("analyticsRangeSelect");
+  if (analyticsRangeSelect) analyticsRangeSelect.addEventListener("change", (e) => {
+    analyticsRangeDays = Number(e.target.value) || 30;
+    renderEmployerAnalytics();
+  });
+  const analyticsExportBtn = $("analyticsExportBtn");
+  if (analyticsExportBtn) analyticsExportBtn.addEventListener("click", exportAnalyticsReport);
+
+  /* Premium / Membership page */
+  const billingToggle = $("billingToggle");
+  if (billingToggle) billingToggle.addEventListener("click", (e) => {
+    const btn = e.target.closest(".billing-opt");
+    if (!btn) return;
+    billingCycle = btn.dataset.billing;
+    renderPremiumPage();
+  });
+  const planPremCta = $("planPremiumCta");
+  if (planPremCta) planPremCta.addEventListener("click", () => {
+    if (currentUser && currentUser.membership) return;
+    openPaymentModal();
+  });
+  const planBasicCta = $("planBasicCta");
+  if (planBasicCta) planBasicCta.addEventListener("click", () => {
+    if (!currentUser || !currentUser.membership) return;
+    if (confirm("Are you sure you want to downgrade to the Basic plan? You'll lose Premium benefits immediately.")) {
+      setMembership(false);
+      renderPremiumPage();
+    }
+  });
+  const payCancel = $("paymentCancel");
+  if (payCancel) payCancel.addEventListener("click", closePaymentModal);
+  const payForm = $("paymentForm");
+  if (payForm) payForm.addEventListener("submit", handlePaymentSubmit);
+  const payModal = $("paymentModal");
+  if (payModal) payModal.addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) closePaymentModal();
+  });
+
+  /* Companies search */
+  const compInput = $("companiesSearchInput");
+  if (compInput) {
+    compInput.addEventListener("input", debounce((e) => {
+      companiesSearchText = e.target.value;
+      renderCompaniesPage();
+    }, 180));
+  }
+  const compBtn = $("companiesSearchBtn");
+  if (compBtn) compBtn.addEventListener("click", () => {
+    companiesSearchText = $("companiesSearchInput").value;
+    renderCompaniesPage();
+  });
+
+  /* Company detail */
+  const coBack = $("companyDetailBack");
+  if (coBack) coBack.addEventListener("click", () => {
+    navigateTo("companiesPage");
+    renderCompaniesPage();
+  });
+  const coTabs = $("companyTabs");
+  if (coTabs) coTabs.addEventListener("click", (e) => {
+    const btn = e.target.closest(".company-tab");
+    if (!btn) return;
+    activeCompanyTab = btn.dataset.companyTab;
+    setCompanyTabActive();
+    renderCompanyTabContent(false);
+  });
+
+  /* Messages: search threads + filter tabs + start new conversation */
+  const threadSearch = $("threadSearchInput");
+  if (threadSearch) threadSearch.addEventListener("input", debounce(() => renderMessagesPage(), 150));
+  const threadTabs = document.querySelectorAll(".thread-filter-tab");
+  threadTabs.forEach((tab) => tab.addEventListener("click", () => {
+    threadTabs.forEach((t) => t.classList.toggle("active", t === tab));
+    threadFilter = tab.dataset.threadFilter;
+    renderMessagesPage();
+  }));
+  const onlineToggle = $("messagesOnlineToggle");
+  if (onlineToggle) onlineToggle.addEventListener("change", () => {
+    messagesOnlineStatus = onlineToggle.checked;
+    renderMessagesPage();
+  });
+  const chatForm = $("chatForm");
+  if (chatForm) chatForm.addEventListener("submit", handleSendMessage);
+  const chatInput = $("chatInput");
+  if (chatInput) {
+    chatInput.addEventListener("keydown", handleChatInputKeydown);
+    chatInput.addEventListener("input", () => autoResizeChatInput(chatInput));
+  }
+  const chatEmojiBtn = $("chatEmojiBtn");
+  if (chatEmojiBtn) chatEmojiBtn.addEventListener("click", () => {
+    const input = $("chatInput");
+    if (!input) return;
+    input.value += " 🙂";
+    input.focus();
+    autoResizeChatInput(input);
+  });
+  const startNewBtn = $("messagesStartNew");
+  if (startNewBtn) startNewBtn.addEventListener("click", () => {
+    if (currentUser && currentUser.role === "Candidate") {
+      navigateTo("candidateFindJobsPage");
+      renderFindJobs();
+    } else if (currentUser && currentUser.role === "Employer") {
+      navigateTo("employerCandidatesPage");
+      renderCandidatesGrid();
+    }
+  });
+
   /* Candidates page */
   $("candidateSearchInput").addEventListener("input", debounce(renderCandidatesGrid, 200));
   ["candidateFilterEducation", "candidateFilterMinExp", "candidateFilterSkill",
@@ -2599,6 +4764,9 @@ function bindEvents() {
   $("recommendationJobSelector").addEventListener("change", (e) => {
     activeRecommendationJobId = e.target.value || null;
     renderRecommendedCandidates();
+  });
+  document.querySelectorAll("#candidateRecTierTabs .rec-tier-tab").forEach((tab) => {
+    tab.addEventListener("click", () => setCandidateRecTier(tab.dataset.recTier));
   });
 
   /* Applications page */
@@ -2634,15 +4802,6 @@ function bindEvents() {
     if (e.target === e.currentTarget) closeInterviewModal();
   });
 
-  /* Messages page */
-  $("chatForm").addEventListener("submit", handleSendMessage);
-  $("chatInput").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage(e);
-    }
-  });
-
   /* Smart Sourcing page */
   $("sourcingJobSelector").addEventListener("change", (e) => {
     activeSourcingJobId = e.target.value || null;
@@ -2666,6 +4825,7 @@ function bindEvents() {
       closeCandidateDetail();
       closeWorkExpModal();
       closeInterviewModal();
+      closePaymentModal();
     }
   });
 }
