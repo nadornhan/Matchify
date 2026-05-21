@@ -27,13 +27,21 @@
         Messages
         <span class="nav-badge hidden" data-nav-messages></span>
       </button>
+      <button type="button" class="nav-link" data-page="companiesPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"></path><path d="M9 21v-6h6v6"></path><path d="M9 9h.01"></path><path d="M15 9h.01"></path><path d="M9 13h.01"></path><path d="M15 13h.01"></path></svg>
+        Companies
+      </button>
+      <button type="button" class="nav-link nav-premium" data-page="premiumPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="#f5b400" stroke="#f5b400" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        Premium
+      </button>
       <button type="button" class="nav-link" data-page="candidateProfilePage">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path></svg>
         My Profile
       </button>
     </nav>
 
-    <nav class="primary-nav hidden" id="employerNav">
+    <nav class="primary-nav employer-top-nav hidden" id="employerTopNav">
       <button type="button" class="nav-link active" data-page="employerDashboardPage">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         Dashboard
@@ -42,30 +50,9 @@
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Post a Job
       </button>
-      <button type="button" class="nav-link" data-page="employerCandidatesPage">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"></circle><path d="M2 21c0-4 3-6 7-6"></path><circle cx="17" cy="11" r="3"></circle><path d="M12 21c0-3 2-5 5-5s5 2 5 5"></path></svg>
-        Candidates
-      </button>
-      <button type="button" class="nav-link" data-page="employerApplicationsPage">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-        Applications
-      </button>
-      <button type="button" class="nav-link" data-page="employerInterviewsPage">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-        Interviews
-      </button>
-      <button type="button" class="nav-link" data-page="employerSourcingPage">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l1.5 3L10 7.5 6.5 9 5 12 3.5 9 0 7.5l3.5-1.5z" transform="translate(2 2) scale(0.8)"></path><polyline points="14 14 17 17 14 20"></polyline><polyline points="20 14 17 17 20 20"></polyline></svg>
-        Smart Sourcing
-      </button>
-      <button type="button" class="nav-link" data-page="employerToolsPage">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6 2.6 2.6 6-6a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-2.6z"></path></svg>
-        Tools
-      </button>
-      <button type="button" class="nav-link" data-page="messagesPage">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-1 4 8.5 8.5 0 0 1-7.6 4.5 8.4 8.4 0 0 1-4-1L3 21l2-5.4a8.4 8.4 0 0 1-1-4 8.5 8.5 0 0 1 4.5-7.6 8.4 8.4 0 0 1 4-1A8.5 8.5 0 0 1 21 11.5z"></path></svg>
-        Messages
-        <span class="nav-badge hidden" data-nav-messages></span>
+      <button type="button" class="nav-link nav-logout" id="employerLogoutBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        Log Out
       </button>
     </nav>
 
@@ -74,6 +61,57 @@
     </div>
   </header>
 
+  <aside class="employer-sidebar hidden" id="employerSidebar">
+    <button type="button" class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Collapse sidebar">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      <span class="sidebar-collapse-label">Collapse</span>
+    </button>
+    <button type="button" class="sidebar-create-btn" id="sidebarCreateNew">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <span>Create new</span>
+    </button>
+    <nav class="sidebar-nav">
+      <button type="button" class="sidebar-link active" data-page="employerDashboardPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        <span>Jobs</span>
+      </button>
+      <button type="button" class="sidebar-link" data-page="employerCandidatesPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"></circle><path d="M2 21c0-4 3-6 7-6"></path><circle cx="17" cy="11" r="3"></circle><path d="M12 21c0-3 2-5 5-5s5 2 5 5"></path></svg>
+        <span>Candidates</span>
+      </button>
+      <button type="button" class="sidebar-link" data-page="employerSourcingPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7-6.3-4.6L5.7 21l2.3-7-6-4.6h7.6z"></path></svg>
+        <span>Smart Sourcing</span>
+      </button>
+      <button type="button" class="sidebar-link" data-page="employerInterviewsPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <span>Interviews</span>
+      </button>
+      <button type="button" class="sidebar-link" data-page="messagesPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-1 4 8.5 8.5 0 0 1-7.6 4.5 8.4 8.4 0 0 1-4-1L3 21l2-5.4a8.4 8.4 0 0 1-1-4 8.5 8.5 0 0 1 4.5-7.6 8.4 8.4 0 0 1 4-1A8.5 8.5 0 0 1 21 11.5z"></path></svg>
+        <span>Messages</span>
+        <span class="sidebar-badge hidden" data-nav-messages></span>
+      </button>
+      <button type="button" class="sidebar-link" data-page="employerAnalyticsPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        <span>Analytics</span>
+      </button>
+      <button type="button" class="sidebar-link" data-page="employerToolsPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        <span>Tools</span>
+      </button>
+      <button type="button" class="sidebar-link" data-page="employerCompanyPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"></path><path d="M9 21v-6h6v6"></path><path d="M9 9h.01"></path><path d="M15 9h.01"></path><path d="M9 13h.01"></path><path d="M15 13h.01"></path></svg>
+        <span>Company</span>
+      </button>
+      <button type="button" class="sidebar-link" data-page="premiumPage">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="#f5b400" stroke="#f5b400" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        <span>Membership</span>
+      </button>
+    </nav>
+  </aside>
+
+  <div class="app-content" id="appContent">
   <main class="container">
     <!-- LANDING -->
     <section class="page-section" id="landingPage">
@@ -302,19 +340,186 @@
         <button type="button" class="tab-pill active" data-tab="saved">Saved <span class="tab-count" id="savedCount">0</span></button>
         <button type="button" class="tab-pill" data-tab="applied">Applied <span class="tab-count" id="appliedCount">0</span></button>
         <button type="button" class="tab-pill" data-tab="interviews">Interviews <span class="tab-count" id="interviewsCount">0</span></button>
+        <button type="button" class="tab-pill" data-tab="archived">Archived <span class="tab-count" id="archivedCount">0</span></button>
       </div>
       <div id="myJobsList" class="application-list"></div>
+    </section>
+
+    <!-- CANDIDATE: APPLY CONFIRMATION -->
+    <section class="page-section hidden" id="candidateApplyConfirmPage">
+      <div class="apply-confirm">
+        <div class="apply-confirm-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="#17a862" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <h1>Application Submitted!</h1>
+        <p class="page-sub" id="applyConfirmMessage">You have successfully applied for the role.</p>
+        <div class="apply-confirm-actions">
+          <button type="button" id="applyConfirmFindMore" class="primary-blue large">Find More Jobs</button>
+          <button type="button" id="applyConfirmViewApps" class="secondary large">View Applications</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CANDIDATE: APPLICATION DETAIL -->
+    <section class="page-section hidden" id="candidateApplicationDetailPage">
+      <button type="button" id="appDetailBack" class="link app-detail-back">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to My Jobs
+      </button>
+      <div id="appDetailContent"></div>
+    </section>
+
+    <!-- CANDIDATE: COMPANIES -->
+    <section class="page-section hidden" id="companiesPage">
+      <div class="companies-hero">
+        <h1>Find your next <span class="grad-text">great place to work</span></h1>
+        <p class="page-sub">Get access to millions of company reviews, salaries, and interview insights.</p>
+        <div class="companies-search">
+          <div class="companies-search-input">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="companiesSearchInput" placeholder="Company name or job title...">
+          </div>
+          <button type="button" class="primary-blue" id="companiesSearchBtn">Find Companies</button>
+        </div>
+        <p class="companies-hero-foot">Looking for salary info instead? <a href="#" class="link inline-link">Search salaries</a></p>
+      </div>
+
+      <div class="companies-section-head">
+        <h2>Popular companies</h2>
+        <a href="#" class="link inline-link">View all ›</a>
+      </div>
+      <div class="companies-grid" id="companiesGrid"></div>
+    </section>
+
+    <!-- PREMIUM / MEMBERSHIP PAGE (works for both Candidate and Employer) -->
+    <section class="page-section hidden" id="premiumPage">
+      <div class="premium-hero">
+        <h1 id="premiumTitle">Supercharge your job search</h1>
+        <p class="page-sub" id="premiumSubtitle">Choose the plan that best fits your career goals. Premium members get hired 3x faster on average.</p>
+        <div class="billing-toggle" id="billingToggle">
+          <button type="button" class="billing-opt active" data-billing="monthly">Monthly</button>
+          <button type="button" class="billing-opt" data-billing="yearly">Yearly <span class="save-badge">SAVE 20%</span></button>
+        </div>
+      </div>
+
+      <div class="premium-plans">
+        <article class="plan-card plan-basic" id="planBasic">
+          <h2>Basic</h2>
+          <p class="plan-tagline" id="planBasicTagline">Essential tools to get your profile out there and start applying.</p>
+          <div class="plan-price">
+            <span class="amount">$0</span>
+            <span class="cadence">/mo</span>
+          </div>
+          <ul class="plan-features" id="planBasicFeatures"></ul>
+          <button type="button" class="plan-cta is-current" id="planBasicCta">Current Plan</button>
+        </article>
+
+        <article class="plan-card plan-premium" id="planPremium">
+          <span class="popular-badge"><svg viewBox="0 0 24 24" width="11" height="11" fill="#f5b400" stroke="#f5b400" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>MOST POPULAR</span>
+          <h2>Premium</h2>
+          <p class="plan-tagline" id="planPremiumTagline">Advanced tools to stand out and find your perfect match.</p>
+          <div class="plan-price">
+            <span class="amount" id="planPremiumAmount">$19</span>
+            <span class="cadence">/mo</span>
+          </div>
+          <p class="plan-billed hidden" id="planPremiumBilled">Billed $180 yearly</p>
+          <ul class="plan-features" id="planPremiumFeatures"></ul>
+          <button type="button" class="plan-cta plan-cta-premium" id="planPremiumCta">
+            <span id="planPremiumCtaLabel">Upgrade to Premium</span>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </article>
+      </div>
+
+      <div class="why-premium card">
+        <h2 id="whyPremiumTitle">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px; margin-right:6px;"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z"></path></svg>
+          Why choose Premium?
+        </h2>
+        <div class="why-grid" id="whyPremiumGrid"></div>
+      </div>
+    </section>
+
+    <!-- PAYMENT MODAL (overlay) -->
+    <div class="modal hidden" id="paymentModal" role="dialog" aria-modal="true">
+      <div class="modal-card payment-modal">
+        <div id="paymentFormView">
+          <h2>Complete Your Purchase</h2>
+          <div class="payment-plan-row">
+            <strong id="paymentPlanName">Premium Plan</strong>
+            <strong id="paymentPlanAmount">$19/mo</strong>
+          </div>
+          <form id="paymentForm">
+            <div class="form-row">
+              <label for="cardNumber">Card Details</label>
+              <div class="card-input-wrap">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                <input type="text" id="cardNumber" placeholder="0000 0000 0000 0000" autocomplete="cc-number">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-row">
+                <label for="cardExpiry">Expiry Date</label>
+                <input type="text" id="cardExpiry" placeholder="MM/YY" autocomplete="cc-exp">
+              </div>
+              <div class="form-row">
+                <label for="cardCvc">CVC</label>
+                <input type="text" id="cardCvc" placeholder="123" autocomplete="cc-csc">
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="secondary outline" id="paymentCancel">Cancel</button>
+              <button type="submit" class="primary-blue">Pay Now</button>
+            </div>
+          </form>
+        </div>
+        <div id="paymentSuccessView" class="payment-success hidden">
+          <div class="payment-success-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#17a862" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          </div>
+          <h3>Payment Successful!</h3>
+          <p>Your premium membership is now active.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CANDIDATE: COMPANY DETAIL -->
+    <section class="page-section hidden" id="companyDetailPage">
+      <button type="button" id="companyDetailBack" class="link app-detail-back">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to Companies
+      </button>
+
+      <div class="company-detail-header card" id="companyDetailHeader"></div>
+
+      <div class="company-tabs" id="companyTabs">
+        <button type="button" class="company-tab" data-company-tab="snapshot">Snapshot</button>
+        <button type="button" class="company-tab" data-company-tab="why">Why Join Us</button>
+        <button type="button" class="company-tab active" data-company-tab="reviews">Reviews <span class="tab-count" id="companyReviewsCount">0</span></button>
+        <button type="button" class="company-tab" data-company-tab="salaries">Salaries <span class="tab-count" id="companySalariesCount">0</span></button>
+        <button type="button" class="company-tab" data-company-tab="jobs">Jobs <span class="tab-count" id="companyJobsCount">0</span></button>
+        <button type="button" class="company-tab" data-company-tab="questions">Questions <span class="tab-count" id="companyQuestionsCount">0</span></button>
+        <button type="button" class="company-tab" data-company-tab="interviews">Interviews</button>
+      </div>
+
+      <div id="companyTabContent"></div>
     </section>
 
     <!-- CANDIDATE: PROFILE -->
     <section class="page-section hidden" id="candidateProfilePage">
       <section class="card profile-card">
         <div class="profile-card-head">
-          <div>
-            <h1>Your Profile</h1>
-            <p class="page-sub">Complete your profile to get intelligent job recommendations.</p>
+          <div class="profile-head-main">
+            <div class="profile-title-row">
+              <h1>Your Profile</h1>
+              <span id="profileMembershipBadge" class="profile-membership-badge standard">Standard Member</span>
+            </div>
+            <p class="page-sub profile-sub">Complete your profile to get intelligent job recommendations.</p>
           </div>
-          <button type="button" id="candidateMembershipBtn" class="membership-btn">Upgrade to Premium</button>
+          <button type="button" id="profileLogoutBtn" class="profile-logout-btn">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            Log Out
+          </button>
         </div>
 
         <form id="candidateForm" class="profile-form">
@@ -332,7 +537,7 @@
             <label class="field">Email Address
               <span class="input-with-icon">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
-                <input type="email" id="candidateEmail" placeholder="you@example.com" required>
+                <input type="email" id="candidateEmail" placeholder="alice@example.com" required>
               </span>
             </label>
             <label class="field">Phone Number
@@ -344,39 +549,61 @@
             <label class="field">Preferred Location
               <span class="input-with-icon">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
-                <input type="text" id="candidateLocation" placeholder="Any city">
+                <input type="text" id="candidateLocation" placeholder="Sydney">
+              </span>
+            </label>
+            <label class="field">Preferred Working Mode
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                <select id="candidateWorkMode">
+                  <option value="Any">Any</option>
+                  <option>Remote</option>
+                  <option>On-site</option>
+                  <option>Hybrid</option>
+                </select>
               </span>
             </label>
           </div>
 
           <h3 class="profile-section-title">
             <span class="section-icon role-icon-candidate"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l10-5 10 5-10 5L2 7z"></path><path d="M6 10v5c0 1 3 3 6 3s6-2 6-3v-5"></path></svg></span>
-            Education &amp; Experience
+            Education
           </h3>
           <div class="grid-2">
             <label class="field">Highest Education
-              <select id="candidateEducation" required>
-                <option value="">Select</option>
-                <option>High School</option>
-                <option>Diploma</option>
-                <option>Bachelor</option>
-                <option>Master</option>
-                <option>PhD</option>
-              </select>
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                <select id="candidateEducation" required>
+                  <option value="">Select</option>
+                  <option>High School</option>
+                  <option>Diploma</option>
+                  <option>Bachelor's Degree</option>
+                  <option>Master's Degree</option>
+                  <option>PhD</option>
+                </select>
+              </span>
             </label>
             <label class="field">Major / Field of Study
-              <input type="text" id="candidateMajor" placeholder="Computer Science" required>
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l10-5 10 5-10 5L2 7z"></path><path d="M6 10v5c0 1 3 3 6 3s6-2 6-3v-5"></path></svg>
+                <input type="text" id="candidateMajor" placeholder="Computer Science" required>
+              </span>
             </label>
-            <label class="field">Years of Experience
-              <input type="number" id="candidateExperience" min="0" placeholder="3" required>
+            <label class="field field-full">University Name
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"></path><path d="M9 21v-6h6v6"></path></svg>
+                <input type="text" id="candidateUniversity" placeholder="e.g. University of Sydney">
+              </span>
             </label>
-            <label class="field">Preferred Work Mode
-              <select id="candidateWorkMode">
-                <option value="Any">Any</option>
-                <option>Remote</option>
-                <option>On-site</option>
-                <option>Hybrid</option>
-              </select>
+          </div>
+          <label class="field">Upload University Certificate</label>
+          <div class="upload-area">
+            <input type="file" id="candidateCertificate" accept=".pdf,.jpg,.jpeg,.png,image/*" hidden>
+            <label for="candidateCertificate" class="upload-label">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#2250f4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8a5 5 0 0 0-9.6-1.5A4 4 0 0 0 6 14h11a4 4 0 0 0 0-8z"></path><polyline points="12 11 12 17"></polyline><polyline points="9 14 12 11 15 14"></polyline></svg>
+              <span class="upload-primary">Upload a file or drag and drop</span>
+              <span class="upload-meta">PDF, JPG, PNG up to 10MB</span>
+              <span id="certificatePreviewName" class="upload-meta"></span>
             </label>
           </div>
 
@@ -385,8 +612,32 @@
             Skills
           </h3>
           <div class="chip-input-wrap">
-            <input type="text" id="candidateSkillsInput" placeholder="Add Skills (press Enter), e.g. React, Python, Data Analysis">
+            <label class="field">Add Skills (Press Enter)
+              <input type="text" id="candidateSkillsInput" placeholder="e.g. React, Python, Data Analysis">
+            </label>
             <div id="candidateSkillsChips" class="chip-row"></div>
+          </div>
+
+          <h3 class="profile-section-title">
+            <span class="section-icon role-icon-candidate"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="9" x2="17" y2="9"></line><line x1="7" y1="13" x2="13" y2="13"></line></svg></span>
+            Licenses
+          </h3>
+          <div class="chip-input-wrap">
+            <label class="field">Add License
+              <input type="text" id="candidateLicensesInput" placeholder="Click to add a license (e.g. RSA, White Card...)">
+            </label>
+            <div id="candidateLicensesChips" class="chip-row"></div>
+          </div>
+
+          <h3 class="profile-section-title">
+            <span class="section-icon role-icon-candidate"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"></circle><path d="M12 13v8"></path><path d="M8 21h8"></path></svg></span>
+            Certifications
+          </h3>
+          <div class="chip-input-wrap">
+            <label class="field">Add Certification
+              <input type="text" id="candidateCertificationsInput" placeholder="Click to add a certification...">
+            </label>
+            <div id="candidateCertificationsChips" class="chip-row"></div>
           </div>
 
           <h3 class="profile-section-title">
@@ -401,14 +652,14 @@
             Resume
           </h3>
           <div class="upload-area">
-            <input type="file" id="candidateResume" accept="image/*" hidden>
+            <input type="file" id="candidateResume" accept=".pdf,.doc,.docx,image/*" hidden>
             <label for="candidateResume" class="upload-label">
               <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#2250f4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8a5 5 0 0 0-9.6-1.5A4 4 0 0 0 6 14h11a4 4 0 0 0 0-8z"></path><polyline points="12 11 12 17"></polyline><polyline points="9 14 12 11 15 14"></polyline></svg>
-              <span class="upload-primary">Upload a resume image</span>
-              <span class="upload-meta">PNG, JPG, or WEBP &middot; OCR will read text automatically</span>
+              <span class="upload-primary">Upload a file or drag and drop</span>
+              <span class="upload-meta">PDF, DOC, DOCX up to 10MB</span>
               <span id="resumePreviewName" class="upload-meta"></span>
             </label>
-            <button type="button" id="extractResumeBtn" class="secondary small">Extract from Resume</button>
+            <button type="button" id="extractResumeBtn" class="secondary small hidden">Extract from Resume</button>
           </div>
 
           <div class="form-foot">
@@ -419,9 +670,9 @@
       </section>
     </section>
 
-    <!-- EMPLOYER: DASHBOARD -->
+    <!-- EMPLOYER: DASHBOARD / JOBS -->
     <section class="page-section hidden" id="employerDashboardPage">
-      <div class="dashboard-hero">
+      <div class="dashboard-hero hidden" id="employerJobsEmptyHero">
         <div class="dashboard-rocket role-icon-employer">
           <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l4-4a8 8 0 0 1 8-8h4v4a8 8 0 0 1-8 8l-4 4"></path><path d="M11 11l2 2"></path><path d="M3 21l3-3"></path></svg>
         </div>
@@ -450,10 +701,62 @@
         </div>
       </div>
 
-      <section class="card" id="manageJobsCard">
-        <h2 class="section-title">Manage My Job Postings</h2>
-        <div id="myJobPostingsList" class="job-list"></div>
-      </section>
+      <div id="employerJobsShell" class="employer-jobs-shell hidden">
+        <div id="employerJobsListView">
+          <div class="jobs-page-head">
+            <h1>Jobs</h1>
+            <button type="button" id="jobsPostBtn" class="primary-blue">Post a job</button>
+          </div>
+          <div class="jobs-tabs">
+            <button type="button" class="jobs-tab active" data-jobs-tab="all">All jobs</button>
+            <button type="button" class="jobs-tab" data-jobs-tab="tags">Tags</button>
+          </div>
+          <div class="jobs-filters">
+            <select id="jobsFilterStatus" class="jobs-filter-select">
+              <option value="">Status</option>
+              <option value="active">Active</option>
+            </select>
+            <input type="text" id="jobsFilterTitle" class="jobs-filter-input" placeholder="Title">
+            <input type="text" id="jobsFilterLocation" class="jobs-filter-input" placeholder="Location">
+            <button type="button" class="jobs-filter-more" disabled>More filters</button>
+            <span class="jobs-result-count" id="jobsResultCount">0 results</span>
+          </div>
+          <div class="jobs-table-wrap card">
+            <table class="jobs-table">
+              <thead>
+                <tr>
+                  <th>Job title</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="employerJobsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="employerJobDetailView" class="hidden">
+          <button type="button" id="jobDetailBackBtn" class="link jobs-back-link">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to Jobs
+          </button>
+          <div id="employerJobDetailHeader" class="job-detail-header card"></div>
+          <div class="jobs-table-wrap card">
+            <table class="jobs-table applicants-table">
+              <thead>
+                <tr>
+                  <th>Candidate</th>
+                  <th>Applied date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="employerJobApplicantsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- EMPLOYER: POST JOB -->
@@ -540,7 +843,7 @@
             <p id="jobStatus" class="status"></p>
             <div>
               <button type="button" id="cancelJobEditBtn" class="secondary hidden">Cancel</button>
-              <button type="submit" class="primary-green">Post Job</button>
+              <button type="submit" id="jobSubmitBtn" class="primary-green">Post Job</button>
             </div>
           </div>
         </form>
@@ -582,9 +885,17 @@
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2"></polygon></svg>
             Smart Recommendations
           </h3>
-          <p class="hint">Select a job posting to see top candidates:</p>
+          <p class="hint">Select a job to see top matching candidates.</p>
           <select id="recommendationJobSelector"></select>
+          <div class="rec-tier-tabs" id="candidateRecTierTabs">
+            <button type="button" class="rec-tier-tab active" data-rec-tier="basic">Basic</button>
+            <button type="button" class="rec-tier-tab" data-rec-tier="premium">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="#f5b400" stroke="#f5b400" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              Premium
+            </button>
+          </div>
           <div id="recommendedCandidatesList" class="rec-list"></div>
+          <div id="recommendedCandidatesPremiumCta" class="rec-premium-cta hidden"></div>
         </aside>
         <section class="candidates-main">
           <h3 class="section-title">All Candidates</h3>
@@ -727,7 +1038,7 @@
 
     <!-- MESSAGES (shared by Candidate & Employer) -->
     <section class="page-section hidden" id="messagesPage">
-      <div class="page-header">
+      <div class="page-header messages-page-header">
         <h1>
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px; margin-right:6px;"><path d="M21 11.5a8.4 8.4 0 0 1-1 4 8.5 8.5 0 0 1-7.6 4.5 8.4 8.4 0 0 1-4-1L3 21l2-5.4a8.4 8.4 0 0 1-1-4 8.5 8.5 0 0 1 4.5-7.6 8.4 8.4 0 0 1 4-1A8.5 8.5 0 0 1 21 11.5z"></path></svg>
           Messages
@@ -735,22 +1046,189 @@
         <p class="page-sub">Talk with candidates and employers directly. Interview invites are delivered here automatically.</p>
       </div>
       <div class="messages-layout">
-        <aside class="thread-sidebar">
+        <aside class="thread-sidebar card">
+          <div class="thread-sidebar-head">
+            <h2>Messages</h2>
+            <label class="online-toggle" title="Toggle your online status">
+              <span class="online-toggle-label">Online</span>
+              <input type="checkbox" id="messagesOnlineToggle" checked>
+              <span class="online-toggle-track"><span class="online-toggle-thumb"></span></span>
+            </label>
+          </div>
+          <div class="thread-search-wrap">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="threadSearchInput" placeholder="Search messages...">
+          </div>
+          <div class="thread-filter-tabs">
+            <button type="button" class="thread-filter-tab active" data-thread-filter="all">All</button>
+            <button type="button" class="thread-filter-tab" data-thread-filter="unread">Unread</button>
+          </div>
           <div id="messageThreadList" class="thread-list"></div>
         </aside>
         <section class="card chat-shell" id="messagesChat">
           <header class="chat-header" id="chatHeader"></header>
           <div id="chatMessages" class="chat-body"></div>
           <form id="chatForm" class="chat-composer">
-            <input type="text" id="chatInput" placeholder="Write a message...">
-            <button type="submit" class="primary-blue">Send</button>
+            <div class="chat-composer-inner">
+              <button type="button" class="chat-composer-icon" id="chatAttachBtn" aria-label="Attach file" title="Attach file">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+              </button>
+              <textarea id="chatInput" rows="1" placeholder="Write a message..."></textarea>
+              <button type="button" class="chat-composer-icon" id="chatEmojiBtn" aria-label="Insert emoji" title="Insert emoji">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+              </button>
+              <button type="submit" class="chat-composer-send" aria-label="Send message" title="Send message">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              </button>
+            </div>
+            <p class="chat-composer-hint">Press Enter to send, Shift + Enter for new line. Never share passwords or credit card details.</p>
           </form>
         </section>
-        <div class="card chat-empty" id="messagesEmpty">
+        <div class="card messages-welcome" id="messagesEmpty">
+          <div class="messages-welcome-art" aria-hidden="true">
+            <div class="msg-bubble back"></div>
+            <div class="msg-bubble front">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            </div>
+            <div class="msg-spark"></div>
+          </div>
           <h3>Welcome to Messages</h3>
-          <p class="hint">Select a conversation from the sidebar to view and respond. New conversations appear when you message a candidate or employer.</p>
+          <p class="hint" id="messagesWelcomeHint">Select a conversation from the sidebar to view and respond to messages. Keep your status online to reply faster!</p>
+          <button type="button" id="messagesStartNew" class="secondary outline">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:6px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Start a new conversation
+          </button>
         </div>
       </div>
+    </section>
+
+    <!-- EMPLOYER: ANALYTICS -->
+    <section class="page-section hidden" id="employerAnalyticsPage">
+      <div class="analytics-page-head">
+        <div class="analytics-page-title">
+          <h1>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px; margin-right:6px;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            Recruiting Analytics
+          </h1>
+          <p class="page-sub">Track your hiring pipeline, performance, and key metrics.</p>
+        </div>
+        <div class="analytics-page-actions">
+          <select id="analyticsRangeSelect" class="analytics-range-select" aria-label="Date range">
+            <option value="30">Last 30 Days</option>
+            <option value="90">Last 90 Days</option>
+            <option value="365">Last 12 Months</option>
+          </select>
+          <button type="button" id="analyticsExportBtn" class="primary-blue">Export Report</button>
+        </div>
+      </div>
+
+      <div class="analytics-kpi-row" id="analyticsKpiRow"></div>
+
+      <div class="analytics-main-layout">
+        <article class="card analytics-chart-card">
+          <h3>Hiring Pipeline Overview</h3>
+          <div id="analyticsPipelineChart" class="analytics-pipeline-chart"></div>
+          <div class="analytics-chart-legend">
+            <span><i class="legend-dot legend-applied"></i> Applied</span>
+            <span><i class="legend-dot legend-shortlisted"></i> Shortlisted</span>
+            <span><i class="legend-dot legend-hired"></i> Hired</span>
+          </div>
+        </article>
+
+        <aside class="analytics-side">
+          <article class="card analytics-dept-card">
+            <h3>Avg. Days to Hire by Dept</h3>
+            <div id="analyticsDeptBars" class="analytics-dept-bars"></div>
+          </article>
+          <div id="analyticsInsight" class="analytics-insight-card"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- EMPLOYER: COMPANY PROFILE -->
+    <section class="page-section hidden" id="employerCompanyPage">
+      <section class="card profile-card">
+        <div class="profile-card-head">
+          <div class="profile-head-main">
+            <div class="profile-title-row">
+              <h1>Company Profile</h1>
+              <span id="employerCompanyBadge" class="profile-membership-badge standard">Standard Employer</span>
+            </div>
+            <p class="page-sub profile-sub">Update your company details to attract the best talent.</p>
+          </div>
+          <button type="button" id="employerCompanyLogoutBtn" class="profile-logout-btn">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            Log Out
+          </button>
+        </div>
+
+        <form id="employerCompanyForm" class="profile-form">
+          <h3 class="profile-section-title">
+            <span class="section-icon role-icon-employer"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"></path><path d="M9 21v-6h6v6"></path></svg></span>
+            Basic Information
+          </h3>
+          <label class="field field-full">Company Name
+            <span class="input-with-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"></path><path d="M9 21v-6h6v6"></path></svg>
+              <input type="text" id="employerCompanyName" placeholder="TechCorp Inc." required>
+            </span>
+          </label>
+          <div class="grid-2">
+            <label class="field">Contact Email
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+                <input type="email" id="employerCompanyEmail" placeholder="recruiter@company.com" required>
+              </span>
+            </label>
+            <label class="field">Website
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                <input type="url" id="employerCompanyWebsite" placeholder="https://techcorp.com">
+              </span>
+            </label>
+          </div>
+
+          <h3 class="profile-section-title">
+            <span class="section-icon role-icon-employer"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></span>
+            Company Details
+          </h3>
+          <div class="grid-2">
+            <label class="field">Industry
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                <input type="text" id="employerCompanyIndustry" placeholder="Technology">
+              </span>
+            </label>
+            <label class="field">Company Size
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"></circle><path d="M2 21c0-4 3-6 7-6"></path><circle cx="17" cy="11" r="3"></circle><path d="M12 21c0-3 2-5 5-5s5 2 5 5"></path></svg>
+                <select id="employerCompanySize">
+                  <option value="">Select size</option>
+                  <option>1-10 employees</option>
+                  <option>11-50 employees</option>
+                  <option>51-200 employees</option>
+                  <option>201-500 employees</option>
+                  <option>500+ employees</option>
+                </select>
+              </span>
+            </label>
+            <label class="field field-full">Headquarters Location
+              <span class="input-with-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+                <input type="text" id="employerCompanyLocation" placeholder="Sydney, NSW">
+              </span>
+            </label>
+          </div>
+          <label class="field field-full">Company Description
+            <textarea id="employerCompanyDescription" rows="5" placeholder="Tell candidates about your company culture, mission, and what makes you a great place to work."></textarea>
+          </label>
+
+          <div class="form-foot">
+            <p id="employerCompanyStatus" class="status"></p>
+            <button type="submit" class="primary-blue">Save Profile</button>
+          </div>
+        </form>
+      </section>
     </section>
 
     <!-- EMPLOYER: TOOLS -->
@@ -770,6 +1248,7 @@
       </section>
     </section>
   </main>
+  </div>
 
   <!-- INTERVIEW SCHEDULER MODAL -->
   <div id="interviewModal" class="modal hidden" role="dialog" aria-modal="true">
