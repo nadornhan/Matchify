@@ -1,8 +1,3 @@
-/* ==========================================================================
-   Matchify - Intelligent Talent Matching Platform
-   ========================================================================== */
-
-/* ---------- Constants ---------- */
 const FREE_RECOMMENDATION_LIMIT = 10;
 const STORAGE = {
   users: "matchifyUsers",
