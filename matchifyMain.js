@@ -3,9 +3,6 @@
    ========================================================================== */
 
 /* ---------- Constants ---------- */
-// #region agent log
-fetch('http://127.0.0.1:7495/ingest/318d51cb-b399-4a23-8524-822d500521db',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7080a9'},body:JSON.stringify({sessionId:'7080a9',location:'matchifyMain.js:6',message:'matchifyMain script start',data:{hasMatchifyData:typeof window.MatchifyData!=='undefined',matchifyDataType:typeof window.MatchifyData,alreadyLoaded:!!window.__MATCHIFY_MAIN_LOADED__},timestamp:Date.now(),hypothesisId:'A,C,D'})}).catch(()=>{});
-// #endregion
 const FREE_RECOMMENDATION_LIMIT = 10;
 const STORAGE = window.MatchifyData.STORAGE;
 
@@ -276,6 +273,7 @@ let jobsFilterLocation = "";
 let activeJobDetailId = null;
 let activeRecommendationJobId = null;
 let candidateRecTier = "basic";
+let jobRecTier = "basic";
 let myJobsTab = "saved";
 let activeThreadKey = null;
 let threadFilter = "all";
@@ -1791,6 +1789,69 @@ function recommendationLimit() {
   return currentUser && currentUser.membership ? Infinity : FREE_RECOMMENDATION_LIMIT;
 }
 
+function jobRecommendationLimit() {
+  if (!currentUser) return FREE_RECOMMENDATION_LIMIT;
+  if (currentUser.membership && jobRecTier === "premium") return Infinity;
+  return FREE_RECOMMENDATION_LIMIT;
+}
+
+function setJobRecTier(tier) {
+  jobRecTier = tier === "premium" ? "premium" : "basic";
+  document.querySelectorAll("#jobRecTierTabs .rec-tier-tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.recTier === jobRecTier);
+  });
+  renderRecommendedJobs();
+}
+
+function renderRecommendedJobsPremiumCta(totalMatches) {
+  const cta = $("recommendedJobsPremiumCta");
+  if (!cta) return;
+  const isPremiumMember = !!(currentUser && currentUser.membership);
+  const showCta = !isPremiumMember && jobRecTier === "premium" && totalMatches > 0;
+  if (!showCta) {
+    cta.classList.add("hidden");
+    cta.innerHTML = "";
+    return;
+  }
+  cta.classList.remove("hidden");
+  cta.innerHTML = `
+    <p>Unlock all job matches</p>
+    <button type="button" class="rec-premium-btn" id="jobRecUpgradeBtn">Upgrade to Premium</button>
+  `;
+  const btn = $("jobRecUpgradeBtn");
+  if (btn) btn.addEventListener("click", () => {
+    navigateTo("premiumPage");
+    renderPremiumPage();
+  });
+}
+
+function buildRecJobCard(job, score) {
+  const card = document.createElement("div");
+  card.className = "rec-card";
+  const topSkills = (job.requiredSkills || []).slice(0, 3)
+    .map((s) => `<span class="chip chip-blue">${escapeHtml(s)}</span>`)
+    .join("");
+  card.innerHTML = `
+    <div class="rec-card-head">
+      <div class="rec-card-user">
+        <div class="rec-card-avatar" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </div>
+        <div>
+          <h5>${escapeHtml(job.title)}</h5>
+          <p class="rec-company">${escapeHtml(job.company)}</p>
+        </div>
+      </div>
+      <span class="rec-match">Match: ${score}</span>
+    </div>
+    <div class="chip-row">${topSkills}</div>
+    <p class="rec-exp">${escapeHtml(job.location || "Anywhere")} · ${escapeHtml(job.workMode || "Any")}</p>
+  `;
+  card.title = "Click to view full job details";
+  card.addEventListener("click", () => openJobDetail(job.id));
+  return card;
+}
+
 /* ---------- Find Jobs page ---------- */
 function filterJobs() {
   const keyword = $("jobSearchKeyword").value.trim();
@@ -1912,7 +1973,15 @@ function escapeHtml(text) {
 
 function renderRecommendedJobs() {
   const wrap = $("recommendedJobsList");
+  if (!wrap) return;
   wrap.innerHTML = "";
+  const cta = $("recommendedJobsPremiumCta");
+  if (cta) cta.classList.add("hidden");
+
+  document.querySelectorAll("#jobRecTierTabs .rec-tier-tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.recTier === jobRecTier);
+  });
+
   const profile = getCurrentCandidateProfile();
   if (!profile) {
     wrap.innerHTML = '<div class="empty">Complete your profile to receive recommendations.</div>';
@@ -1922,44 +1991,34 @@ function renderRecommendedJobs() {
     wrap.innerHTML = '<div class="empty">No job postings available yet.</div>';
     return;
   }
-  const scored = jobs
+
+  const allScored = jobs
     .map((job) => ({ job, score: scoreJobForCandidate(profile, job) }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, recommendationLimit());
+    .sort((a, b) => b.score - a.score);
+  const isPremiumMember = !!(currentUser && currentUser.membership);
+
+  if (!isPremiumMember && jobRecTier === "premium") {
+    wrap.innerHTML = allScored.length
+      ? '<div class="empty rec-premium-tab-empty">Upgrade to Premium to unlock every matching job for your profile.</div>'
+      : '<div class="empty">No matching jobs yet.</div>';
+    renderRecommendedJobsPremiumCta(allScored.length);
+    return;
+  }
+
+  const limit = jobRecommendationLimit();
+  const scored = allScored.slice(0, limit);
 
   if (!scored.length) {
-    wrap.innerHTML = '<div class="empty">No recommendations yet.</div>';
+    wrap.innerHTML = '<div class="empty">No matching jobs yet.</div>';
+    renderRecommendedJobsPremiumCta(allScored.length);
     return;
   }
 
   scored.forEach(({ job, score }) => {
-    const card = document.createElement("div");
-    card.className = "rec-card";
-    const skillsHtml = (job.requiredSkills || [])
-      .slice(0, 3)
-      .map((s) => `<span class="chip">${escapeHtml(s)}</span>`)
-      .join("");
-    card.innerHTML = `
-      <h5>${escapeHtml(job.title)}</h5>
-      <p class="rec-company">${escapeHtml(job.company)}</p>
-      <div class="chip-row">${skillsHtml}</div>
-      <div class="rec-foot">
-        <span>${escapeHtml(job.location || "Anywhere")}</span>
-        <span class="rec-match">Match: ${score}</span>
-      </div>
-    `;
-    card.addEventListener("click", () => openJobDetail(job.id));
-    wrap.appendChild(card);
+    wrap.appendChild(buildRecJobCard(job, score));
   });
 
-  if (!currentUser.membership && jobs.length > FREE_RECOMMENDATION_LIMIT) {
-    const upsell = document.createElement("div");
-    upsell.className = "empty";
-    upsell.style.cursor = "pointer";
-    upsell.textContent = "Upgrade to Premium for unlimited recommendations →";
-    upsell.addEventListener("click", () => navigateTo("candidateProfilePage"));
-    wrap.appendChild(upsell);
-  }
+  renderRecommendedJobsPremiumCta(allScored.length);
 }
 
 /* ---------- Job detail panel ---------- */
@@ -4612,6 +4671,10 @@ function bindEvents() {
   }, 200));
 
   /* Find Jobs */
+  document.querySelectorAll("#jobRecTierTabs .rec-tier-tab").forEach((tab) => {
+    tab.addEventListener("click", () => setJobRecTier(tab.dataset.recTier));
+  });
+
   $("jobSearchBtn").addEventListener("click", renderFindJobs);
   $("jobSearchKeyword").addEventListener("input", debounce(renderFindJobs, 200));
   $("jobSearchLocation").addEventListener("input", debounce(renderFindJobs, 200));
