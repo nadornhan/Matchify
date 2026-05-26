@@ -1331,6 +1331,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="matchifyData.js"></script>
+  <script>
+    // #region agent log
+    fetch('http://127.0.0.1:7495/ingest/318d51cb-b399-4a23-8524-822d500521db',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7080a9'},body:JSON.stringify({sessionId:'7080a9',location:'index.html:post-data',message:'after matchifyData before matchifyMain',data:{hasMatchifyData:typeof window.MatchifyData!=='undefined',hasStorage:!!(window.MatchifyData&&window.MatchifyData.STORAGE)},timestamp:Date.now(),hypothesisId:'A,D'})}).catch(()=>{});
+    // #endregion
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="matchifyMain.js"></script>
 </body>
