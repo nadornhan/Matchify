@@ -319,9 +319,18 @@
         <aside class="recommend-sidebar">
           <h3 class="rec-title">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#2250f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2"></polygon></svg>
-            Top Recommendations
+            Smart Recommendations
           </h3>
+          <p class="hint">Personalized job matches based on your profile.</p>
+          <div class="rec-tier-tabs" id="jobRecTierTabs">
+            <button type="button" class="rec-tier-tab active" data-rec-tier="basic">Basic</button>
+            <button type="button" class="rec-tier-tab" data-rec-tier="premium">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="#f5b400" stroke="#f5b400" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              Premium
+            </button>
+          </div>
           <div id="recommendedJobsList" class="rec-list"></div>
+          <div id="recommendedJobsPremiumCta" class="rec-premium-cta hidden"></div>
         </aside>
         <section class="jobs-main">
           <h3 class="section-title">All Available Jobs</h3>
@@ -1331,11 +1340,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="matchifyData.js"></script>
-  <script>
-    // #region agent log
-    fetch('http://127.0.0.1:7495/ingest/318d51cb-b399-4a23-8524-822d500521db',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7080a9'},body:JSON.stringify({sessionId:'7080a9',location:'index.html:post-data',message:'after matchifyData before matchifyMain',data:{hasMatchifyData:typeof window.MatchifyData!=='undefined',hasStorage:!!(window.MatchifyData&&window.MatchifyData.STORAGE)},timestamp:Date.now(),hypothesisId:'A,D'})}).catch(()=>{});
-    // #endregion
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="matchifyMain.js"></script>
 </body>
